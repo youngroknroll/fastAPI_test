@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
+from app.api import article
+
 app = FastAPI()
 
-@app.get("/")
-def hello():
-    return {"message": "Hello, uv world!"}
+app.include_router(article.router)
