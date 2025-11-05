@@ -20,9 +20,24 @@ def test_get_articles_by_id():
     #given 서버가 실행중이며 /articles/{id} 엔드포인트가 존재
     #when 클라이언트가 /articles/1로 GET 요청
     response = client.get("/articles/1")
+
     #then 200코드와 해당 아티클의 title 및 author 응답
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == 1
     assert "title" in data
     assert "author" in data
+
+def test_create_article():
+    #given 새글 data
+    payload = {"title":"test","author":"yeong"}
+
+    #when 클라이언트가 /articles로 POST요청을 보냄
+    response = client.post("/articles", json=payload)
+
+    #then 상태코드 201, json 응답 title,author 반환
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "test"
+    assert data["author"] == "yeong"
+    assert "id" in data

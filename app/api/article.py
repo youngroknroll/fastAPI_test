@@ -1,5 +1,12 @@
 from fastapi import APIRouter, HTTPException
+from sqlmodel import SQLModel
 
+
+#basemodel
+class Article(SQLModel):
+    id: int | None = None
+    title: str
+    author: str
 router = APIRouter(prefix="/articles", tags=["articles"])
 
 articles = [
@@ -18,3 +25,9 @@ def get_article(id: int):
             return article
     raise HTTPException(status_code=404, detail="article not found")
 
+@router.post("/")
+def create_article(article: Article):
+    new_id = max(a["id"] for a in articles) + 1 if articles else 1
+    new_article = {"id": new_id, "title": article.title, "author": article.author}
+    articles.append(new_article)
+    return new_article
