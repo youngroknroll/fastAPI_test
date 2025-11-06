@@ -1,3 +1,4 @@
+from pickletools import read_stringnl_noescape_pair
 
 from app.repositories.article_repo import ArticleRepo
 
@@ -33,6 +34,19 @@ def test_article_update(session):
     assert updated is not None
     assert updated.title == "new"
     assert updated.author == "song"
+
+def test_article_delete(session):
+    #given
+    repo = ArticleRepo(session)
+    created = repo.create(title="delete", author="yeong")
+
+    #when
+    result = repo.delete(created.id)
+
+    #then
+    assert result is True
+    assert repo.get(created.id) is None
+
 
 
 

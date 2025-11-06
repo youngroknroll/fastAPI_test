@@ -40,3 +40,15 @@ class ArticleRepo:
             self.session.rollback()
             raise
         return article
+
+    def delete(self, article_id: int) -> bool:
+        article = self.get(article_id)
+        if not article:
+            return False
+        try:
+            self.session.delete(article)
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        return True
