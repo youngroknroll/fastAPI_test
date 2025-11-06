@@ -1,8 +1,6 @@
-from fastapi import FastAPI
 
-from app.api import article
-from app.repositories.articleRepo import ArticleRepo
-from tests.conftest import session
+from app.repositories.article_repo import ArticleRepo
+
 
 def test_article_create(session):
     #given

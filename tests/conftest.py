@@ -1,5 +1,6 @@
 import pytest
-from sqlmodel import SQLModel, create_engine, Session
+from sqlmodel import Session, SQLModel, create_engine
+
 
 @pytest.fixture
 def session():
