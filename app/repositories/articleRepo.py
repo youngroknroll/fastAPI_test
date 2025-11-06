@@ -24,3 +24,19 @@ class ArticleRepo:
         self.session.commit()
         self.session.refresh(article)
         return article
+
+    def update(self, article_id: int, title: str, author: str) -> Article:
+        article = self.get(article_id)
+        if not article:
+            return {"error": "article not found"}
+        article.title = title
+        article.author = author
+
+        try:
+            self.session.add(article)
+            self.session.commit()
+            self.session.refresh(article)
+        except Exception:
+            self.session.rollback()
+            raise
+        return article

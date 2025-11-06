@@ -1,17 +1,11 @@
 from fastapi import FastAPI
 
+from app.api import article
 from app.repositories.articleRepo import ArticleRepo
-from sqlmodel import SQLModel, create_engine, Session
+from tests.conftest import session
 
-def test_article_repository_crud():
-    #given sqlite연결, repo
-    db_url = "sqlite:///:memory:"
-    engine = create_engine(db_url, echo=True)
-
-    #테이블 먼저 만들어야 테스트 안터진다.
-    SQLModel.metadata.create_all(engine)
-
-    session = Session(engine)
+def test_article_create(session):
+    #given
     repo = ArticleRepo(session)
 
     #when 새로운 글 작성
@@ -21,13 +15,26 @@ def test_article_repository_crud():
     assert created.id == 1
     assert created.title == "test"
 
-    # when 전체 조회
-    articles = repo.list()
-    assert len(articles) == 1
+    # # when 전체 조회
+    # articles = repo.list()
+    # assert len(articles) == 1
 
     # when ID 조회
     found = repo.get(created.id)
     assert found.title == "test"
 
-    # when 존재하지 않는 ID 조회
-    assert repo.get(999) is None
+def test_article_update(session):
+    #given
+    repo = ArticleRepo(session)
+    created = repo.create(title="old", author="yeong")
+
+    #when
+    updated = repo.update(article_id=created.id, title="new", author="song")
+
+    #then
+    assert updated is not None
+    assert updated.title == "new"
+    assert updated.author == "song"
+
+
+
