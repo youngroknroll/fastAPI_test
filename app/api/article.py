@@ -1,18 +1,13 @@
-from fastapi import APIRouter, HTTPException
-from sqlmodel import SQLModel
+from fastapi import APIRouter, HTTPException, Depends
+from sqlmodel import Session
+
+from app.core.db import get_session
+from app.repositories.article_repo import ArticleRepo
+from app.schemas.article_schema import ArticleCreate, ArticleResponse
 
 
-#basemodel
-class Article(SQLModel):
-    id: int | None = None
-    title: str
-    author: str
 router = APIRouter(prefix="/articles", tags=["articles"])
 
-articles = [
-        {"id": 1, "title": "첫 번째 글", "author": "영록"},
-        {"id": 2, "title": "두 번째 글", "author": "익명"},
-    ]
 
 @router.get("/")
 def list_articles():
@@ -31,3 +26,11 @@ def create_article(article: Article):
     new_article = {"id": new_id, "title": article.title, "author": article.author}
     articles.append(new_article)
     return new_article
+
+@router.put("/{id}")
+def update_article(id: int, article: Article):
+    for article in articles:
+        if article["id"] == id:
+            article.title = article.title
+            article.author = article.author
+    return article

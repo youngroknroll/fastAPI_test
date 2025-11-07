@@ -1,9 +1,19 @@
+from pydantic import BaseModel
 from sqlmodel import Field, Session, SQLModel, select
 
 
 class Article(SQLModel, table=True):
     __tablename__ = "articles"
     id: int | None = Field(default=None, primary_key=True)
+    title: str
+    author: str
+
+class AritcleCreate(BaseModel):
+    title: str
+    author: str
+
+class ArticleResponse(BaseModel):
+    id: int
     title: str
     author: str
 
@@ -28,7 +38,7 @@ class ArticleRepo:
     def update(self, article_id: int, title: str, author: str) -> Article:
         article = self.get(article_id)
         if not article:
-            return {"error": "article not found"}
+            return None
         article.title = title
         article.author = author
 

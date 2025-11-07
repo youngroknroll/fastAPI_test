@@ -41,3 +41,20 @@ def test_create_article():
     assert data["title"] == "test"
     assert data["author"] == "yeong"
     assert "id" in data
+
+def test_update_article():
+    #given 게시글 생성
+    created = client.post("/articles", json={"title": "old", "author": "me"}).json()
+
+    # when PUT으로 수정 요청
+    updated = {"title": "new", "author": "yeong"}
+    response = client.put(f"/articles/{created['id']}", json=updated)
+
+    #then 200코드 , 수정 데이터 반환
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "new"
+    assert data["author"] == "yeong"
+
+def test_delete_article():
+    pass
