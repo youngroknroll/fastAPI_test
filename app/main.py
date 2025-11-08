@@ -1,11 +1,14 @@
 from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
 
 from app.api import article
-from app.core.db import
+from app.core.db import init_db
 
 app = FastAPI()
 
+
+@app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
+    init_db()
+
+
 app.include_router(article.router)
