@@ -1,36 +1,32 @@
-from fastapi import APIRouter, HTTPException, Depends
-from sqlmodel import Session
+from typing import List
 
-from app.core.db import get_session
-from app.repositories.article_repo import ArticleRepo
-from app.schemas.article_schema import ArticleCreate, ArticleResponse
+from fastapi import APIRouter, Depends
 
+from app.core.db import get_article_service
+from app.schemas.article_schema import ArticleResponse, ArticleUpdate, ArticleCreate
+from app.services.article_service import ArticleService
 
 router = APIRouter(prefix="/articles", tags=["articles"])
 
+@router.get("/", response_model=List[ArticleResponse])
+def list_articles(service: ArticleService = Depends(get_article_service)):
+    """글 목록 조회"""
+    return service.list_articles()
 
-@router.get("/")
-def list_articles():
-    return articles
+@router.get("/{id}", response_model=ArticleResponse)
+def get_article(id: int, service: ArticleService = Depends(get_article_service)):
+    return service.get_article(id)
 
-@router.get("/{id}")
-def get_article(id: int):
-    for article in articles:
-        if article["id"] == id:
-            return article
-    raise HTTPException(status_code=404, detail="article not found")
+@router.post("/", response_model=ArticleResponse, status_code=201)
+def create_article(request: ArticleCreate, service: ArticleService = Depends(get_article_service)):
+    return service.create_article(request)
 
-@router.post("/")
-def create_article(article: Article):
-    new_id = max(a["id"] for a in articles) + 1 if articles else 1
-    new_article = {"id": new_id, "title": article.title, "author": article.author}
-    articles.append(new_article)
-    return new_article
+@router.put("/{id}", response_model=ArticleResponse)
+def update_article(id: int, request:ArticleUpdate, service: ArticleService = Depends(get_article_service)):
+    """수정"""
+    return service.update_article(id, request)
 
-@router.put("/{id}")
-def update_article(id: int, article: Article):
-    for article in articles:
-        if article["id"] == id:
-            article.title = article.title
-            article.author = article.author
-    return article
+@router.delete("/{id}", status_code=204)
+def delete_article(id: int, service: ArticleService = Depends(get_article_service)):
+    """삭제"""
+    service.delete_article(id)

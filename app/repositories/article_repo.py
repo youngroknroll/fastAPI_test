@@ -1,23 +1,16 @@
-from pydantic import BaseModel
 from sqlmodel import Field, Session, SQLModel, select
 
 
 class Article(SQLModel, table=True):
     __tablename__ = "articles"
-    id: int | None = Field(default=None, primary_key=True)
+    id: int = Field(primary_key=True)
     title: str
     author: str
 
-class AritcleCreate(BaseModel):
-    title: str
-    author: str
-
-class ArticleResponse(BaseModel):
-    id: int
-    title: str
-    author: str
 
 class ArticleRepo:
+    # 순수 데이터만 접근하도록
+
     def __init__(self, session: Session):
         self.session = session
 
@@ -25,40 +18,21 @@ class ArticleRepo:
         statement = select(Article)
         return self.session.exec(statement).all()
 
-    def get(self, article_id: int) -> Article | None:
+    def get(self, article_id: int):
         return self.session.get(Article, article_id)
 
-    def create(self, title: str, author: str) -> Article:
-        article = Article(title=title, author=author)
+    def create(self, article: Article):
         self.session.add(article)
         self.session.commit()
         self.session.refresh(article)
         return article
 
-    def update(self, article_id: int, title: str, author: str) -> Article:
-        article = self.get(article_id)
-        if not article:
-            return None
-        article.title = title
-        article.author = author
-
-        try:
-            self.session.add(article)
-            self.session.commit()
-            self.session.refresh(article)
-        except Exception:
-            self.session.rollback()
-            raise
+    def update(self, article: Article):
+        self.session.add(article)
+        self.session.commit()
+        self.session.refresh(article)
         return article
 
-    def delete(self, article_id: int) -> bool:
-        article = self.get(article_id)
-        if not article:
-            return False
-        try:
-            self.session.delete(article)
-            self.session.commit()
-        except Exception:
-            self.session.rollback()
-            raise
-        return True
+    def delete(self, article: Article):
+        self.session.delete(article)
+        self.session.commit()

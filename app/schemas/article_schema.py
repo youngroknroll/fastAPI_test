@@ -12,3 +12,9 @@ class ArticleResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ArticleUpdate(BaseModel):
+    title: str
+    author: str
+
+
+
