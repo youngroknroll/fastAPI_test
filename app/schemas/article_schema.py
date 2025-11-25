@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-
+from pydantic import BaseModel, ConfigDict
 class ArticleCreate(BaseModel):
     title: str
     author: str
@@ -9,8 +8,7 @@ class ArticleResponse(BaseModel):
     title: str
     author: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ArticleUpdate(BaseModel):
     title: str
