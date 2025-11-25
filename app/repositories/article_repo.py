@@ -1,11 +1,6 @@
-from sqlmodel import Field, Session, SQLModel, select
+from sqlmodel import Session, select
 
-
-class Article(SQLModel, table=True):
-    __tablename__ = "articles"
-    id: int | None = Field(default=None, primary_key=True)
-    title: str
-    author: str
+from app.models.article_model import Article
 
 
 class ArticleRepo:
