@@ -5,6 +5,10 @@ from app.repositories.article_repo import ArticleRepo
 from app.schemas.article_schema import ArticleCreate, ArticleUpdate, ArticleResponse
 
 
+def slugify(text: str) -> str:
+    """title을 slug로 변환"""
+    return text.lower().replace(" ", "-")
+
 class ArticleService:
     """비즈니스 로직 레이어"""
 
@@ -25,7 +29,10 @@ class ArticleService:
 
     def create_article(self, request: ArticleCreate):
         """생성"""
-        created = self.repo.create(title=request.title, author=request.author)
+        
+        slug = request.slug if request.slug else slugify(request.title)
+        created = self.repo.create(ArticleCreate(title=request.title, author=request.author, slug=slug)
+        
         return ArticleResponse.model_validate(created)
 
     def update_article(self, article_id: int, request: ArticleUpdate):

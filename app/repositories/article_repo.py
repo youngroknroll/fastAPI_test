@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 
 from app.models.article_model import Article
+from app.schemas.article_schema import ArticleCreate
 
 
 class ArticleRepo:
@@ -18,9 +19,9 @@ class ArticleRepo:
         """ID로 단건 조회"""
         return self.session.get(Article, article_id)
 
-    def create(self, title: str, author: str) -> Article:
+    def create(self, data: ArticleCreate) -> Article:
         """게시글 생성"""
-        article = Article(title=title, author=author)
+        article = Article(**data.model_dump())
         self.session.add(article)
         self.session.commit()
         self.session.refresh(article)
