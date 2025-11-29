@@ -1,32 +1,61 @@
+# FastAPI RealWorld
+
+RealWorld API implementation with FastAPI + SQLModel, following TDD principles
+
+## 🏗️ Architecture
+
+**Layered Architecture** 사용:
+- `app/api/` - API Router Layer (FastAPI endpoints)
+- `app/services/` - Service Layer (Business Logic)
+- `app/repositories/` - Repository Layer (Data Access)
+- `app/models/` - Database Models (SQLModel)
+- `app/schemas/` - Pydantic Schemas (Request/Response)
+- `app/core/` - Core (Config, DB, Dependencies)
+
+## 🛠️ Tech Stack
+
+- **FastAPI** - Web framework
+- **SQLModel** - ORM (SQLAlchemy + Pydantic)
+- **uv** - Package manager
+- **pytest** - Testing framework
+- **ruff** - Linter & Formatter
+
+## 🚀 Setup
+
 ```bash
-# 프로젝트 구조
-fastAPI_realworld/
+# Install dependencies
+uv sync
+
+# Run tests
+uv run pytest
+
+# Run linter
+uv run ruff check app/
+
+# Run server
+uv run uvicorn app.main:app --reload
+```
+
+## 📝 Development
+
+TDD (Test-Driven Development) 원칙을 따릅니다:
+1. 🔴 **Red** - 실패하는 테스트 작성
+2. 🟢 **Green** - 최소한의 코드로 테스트 통과
+3. 🔵 **Refactor** - 코드 개선
+
+## 📁 Project Structure
+
+```
+fastapi_realworld/
 ├── app/
-│   ├── __init__.py
-│   ├── main.py                 # FastAPI 엔트리포인트
-│   ├── api/                    # 라우터 모듈
-│   │   ├── __init__.py
-│   │   └── article.py
-│   ├── core/                   # 설정/환경/의존성 (Config, DB 등)
-│   │   ├── __init__.py
-│   │   └── config.py
-│   ├── models/                 # ORM 모델 (SQLAlchemy, SQLModel 등)
-│   │   ├── __init__.py
-│   │   └── article.py
-│   ├── schemas/                # Pydantic 스키마
-│   │   ├── __init__.py
-│   │   └── article.py
-│   └── services/               # 비즈니스 로직
-│       ├── __init__.py
-│       └── article_service.py
-│
-├── tests/                      # pytest 테스트 코드
-│   ├── __init__.py
-│   └── test_article_api.py
-│
-├── pyproject.toml              # uv + Ruff + Pytest 설정
-├── uv.lock
-├── Makefile                    # lint/test/serve 단축 명령
-├── Dockerfile                  # (추후 CI/CD용)
+│   ├── api/          # API endpoints
+│   ├── services/     # Business logic
+│   ├── repositories/ # Data access
+│   ├── models/       # DB models
+│   ├── schemas/      # Pydantic schemas
+│   ├── core/         # Config & dependencies
+│   └── main.py       # FastAPI app
+├── tests/            # Test files
+├── pyproject.toml    # Project config
 └── README.md
 ```

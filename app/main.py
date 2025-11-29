@@ -1,21 +1,16 @@
-from contextlib import asynccontextmanager
+"""FastAPI Application Entry Point"""
+
 from fastapi import FastAPI
 
-from app.api import article
-from app.core.db import init_db
+from app.api import auth
 
-def start():
-    print("Starting server...")
-    init_db()
+app = FastAPI(title="RealWorld API", version="0.1.0")
 
-def shutdown():
-    print("Shutting down server...")
+app.include_router(auth.router)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    start()
-    yield
-    shutdown()
 
-app = FastAPI(lifespan=lifespan)
-app.include_router(article.router)  
+@app.get("/")
+def health_check():
+    """Health check endpoint"""
+    return {"status": "ok"}
+
