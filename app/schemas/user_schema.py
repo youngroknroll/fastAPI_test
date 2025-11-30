@@ -15,4 +15,5 @@ class UserResponse(BaseModel):
     """User response"""
 
     email: str
+    username: str
 

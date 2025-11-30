@@ -44,3 +44,21 @@ def test_반환된_유저_객체는_email을_포함한다():
     data = response.json()
     assert data["user"]["email"] == "test@example.com"
 
+
+def test_반환된_유저_객체는_username을_포함한다():
+    # given
+    payload = {
+        "user": {
+            "email": "test@example.com",
+            "password": "password123",
+            "username": "testuser",
+        }
+    }
+
+    # when
+    response = client.post("/users", json=payload)
+
+    # then
+    assert response.status_code == 201
+    data = response.json()
+    assert data["user"]["username"] == "testuser"
