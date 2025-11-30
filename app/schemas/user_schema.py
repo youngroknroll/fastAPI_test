@@ -11,6 +11,13 @@ class UserRegister(BaseModel):
     username: str
 
 
+class UserLogin(BaseModel):
+    """User login request"""
+
+    email: str
+    password: str
+
+
 class UserResponse(BaseModel):
     """User response"""
 

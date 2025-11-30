@@ -16,9 +16,9 @@
 
 # 2. Auth: Login
 
-* [ ] 올바른 email + password로 로그인하면 유저 객체를 반환한다
-* [ ] 잘못된 password면 422를 반환한다
-* [ ] 존재하지 않는 email이면 422를 반환한다
+* [x] 올바른 email + password로 로그인하면 유저 객체를 반환한다
+* [x] 잘못된 password면 422를 반환한다
+* [x] 존재하지 않는 email이면 422를 반환한다
 
 ---
 
