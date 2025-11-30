@@ -1,6 +1,7 @@
 """Auth API Router"""
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlmodel import Session
 
 from app.core.database import get_session
@@ -10,22 +11,28 @@ from app.schemas.user_schema import UserRegister, UserResponse
 router = APIRouter(tags=["auth"])
 
 
+class UserRegisterRequest(BaseModel):
+    """Register request wrapper"""
+
+    user: UserRegister
+
+
 @router.post("/users", status_code=201)
-def register(request: dict, session: Session = Depends(get_session)):
+def register(request: UserRegisterRequest, session: Session = Depends(get_session)):
     """Register a new user"""
-    user_data = request["user"]
+    user_data = request.user
     repo = UserRepository(session)
 
     # Check if email already exists
-    existing_user = repo.get_by_email(user_data["email"])
+    existing_user = repo.get_by_email(user_data.email)
     if existing_user:
         raise HTTPException(status_code=422, detail="Email already registered")
 
     # Create user
     user = repo.create(
-        email=user_data["email"],
-        username=user_data["username"],
-        password=user_data["password"],
+        email=user_data.email,
+        username=user_data.username,
+        password=user_data.password,
     )
 
     return {

@@ -102,3 +102,25 @@ def test_이미_존재하는_이메일이면_422를_반환한다(client):
 
     # then
     assert response.status_code == 422
+
+
+def test_비밀번호가_없으면_422를_반환한다(client):
+    # given: 비밀번호 없는 요청
+    payload = {"user": {"email": "test@example.com", "username": "testuser"}}
+
+    # when
+    response = client.post("/users", json=payload)
+
+    # then
+    assert response.status_code == 422
+
+
+def test_username이_비어_있으면_422를_반환한다(client):
+    # given: username 없는 요청
+    payload = {"user": {"email": "test@example.com", "password": "password123"}}
+
+    # when
+    response = client.post("/users", json=payload)
+
+    # then
+    assert response.status_code == 422
