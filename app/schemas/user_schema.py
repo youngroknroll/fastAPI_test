@@ -16,4 +16,5 @@ class UserResponse(BaseModel):
 
     email: str
     username: str
+    token: str
 

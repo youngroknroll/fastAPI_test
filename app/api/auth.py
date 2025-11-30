@@ -11,5 +11,11 @@ router = APIRouter(tags=["auth"])
 def register(request: dict):
     """Register a new user"""
     user_data = request["user"]
-    return {"user": {"email": user_data["email"], "username": user_data["username"]}}
+    return {
+        "user": {
+            "email": user_data["email"],
+            "username": user_data["username"],
+            "token": "dummy-jwt-token",
+        }
+    }
 
