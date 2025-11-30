@@ -2,11 +2,14 @@
 
 from fastapi import APIRouter
 
+from app.schemas.user_schema import UserRegister, UserResponse
+
 router = APIRouter(tags=["auth"])
 
 
 @router.post("/users", status_code=201)
-def register():
+def register(request: dict):
     """Register a new user"""
-    return {"user": {}}
+    user_data = request["user"]
+    return {"user": {"email": user_data["email"]}}
 
