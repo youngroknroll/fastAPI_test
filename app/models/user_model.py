@@ -14,4 +14,6 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True)
     username: str = Field(unique=True, index=True)
     hashed_password: str
+    bio: Optional[str] = None
+    image: Optional[str] = None
 

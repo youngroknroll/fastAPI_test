@@ -6,7 +6,7 @@ from sqlmodel import Session
 
 from app.core.database import get_session
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_schema import UserLogin, UserRegister, UserResponse
+from app.schemas.user_schema import UserLogin, UserRegister, UserResponse, UserUpdate
 
 router = APIRouter(tags=["auth"])
 
@@ -21,6 +21,12 @@ class UserLoginRequest(BaseModel):
     """Login request wrapper"""
 
     user: UserLogin
+
+
+class UserUpdateRequest(BaseModel):
+    """Update request wrapper"""
+
+    user: UserUpdate
 
 
 @router.post("/users", status_code=201)
@@ -90,6 +96,50 @@ def get_current_user(
     # Get first user (dummy implementation)
     repo = UserRepository(session)
     user = repo.get_first_user()
+
+    return {
+        "user": {
+            "email": user.email,
+            "username": user.username,
+            "token": token,
+        }
+    }
+
+
+@router.put("/user", status_code=200)
+def update_user(
+    request: UserUpdateRequest,
+    authorization: str = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Update user"""
+    # Check if authorization header exists
+    if authorization is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    token = authorization.replace("Token ", "")
+    update_data = request.user
+
+    # Get first user (dummy implementation)
+    repo = UserRepository(session)
+    user = repo.get_first_user()
+
+    # Update user fields
+    if update_data.email is not None:
+        user.email = update_data.email
+    if update_data.username is not None:
+        user.username = update_data.username
+    if update_data.password is not None:
+        user.hashed_password = update_data.password
+    if update_data.bio is not None:
+        user.bio = update_data.bio
+    if update_data.image is not None:
+        user.image = update_data.image
+
+    # Save changes
+    session.add(user)
+    session.commit()
+    session.refresh(user)
 
     return {
         "user": {
