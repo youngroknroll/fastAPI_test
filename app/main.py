@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import auth
+from app.api import auth, profile
 from app.core.database import create_db_and_tables
 
 
@@ -20,6 +20,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="RealWorld API", version="0.1.0", lifespan=lifespan)
 
 app.include_router(auth.router)
+app.include_router(profile.router)
 
 
 @app.get("/")

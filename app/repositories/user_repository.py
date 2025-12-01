@@ -18,6 +18,11 @@ class UserRepository:
         statement = select(User).where(User.email == email)
         return self.session.exec(statement).first()
 
+    def get_by_username(self, username: str) -> Optional[User]:
+        """Get user by username"""
+        statement = select(User).where(User.username == username)
+        return self.session.exec(statement).first()
+
     def create(self, email: str, username: str, password: str) -> User:
         """Create a new user"""
         user = User(email=email, username=username, hashed_password=password)
