@@ -24,8 +24,8 @@
 
 # 3. Auth: Get Current User
 
-* [ ] Authorization 토큰이 있으면 현재 유저 정보를 반환한다
-* [ ] Authorization 토큰이 없으면 401을 반환한다
+* [x] Authorization 토큰이 있으면 현재 유저 정보를 반환한다
+* [x] Authorization 토큰이 없으면 401을 반환한다
 
 ---
 

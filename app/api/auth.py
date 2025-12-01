@@ -1,6 +1,6 @@
 """Auth API Router"""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session
 
@@ -70,6 +70,32 @@ def login(request: UserLoginRequest, session: Session = Depends(get_session)):
             "email": user.email,
             "username": user.username,
             "token": "dummy-jwt-token",
+        }
+    }
+
+
+@router.get("/user", status_code=200)
+def get_current_user(
+    authorization: str = Header(None), session: Session = Depends(get_session)
+):
+    """Get current user"""
+    # Check if authorization header exists
+    if authorization is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # For now, just extract email from token (dummy implementation)
+    # Token format: "Token dummy-jwt-token"
+    token = authorization.replace("Token ", "")
+
+    # Get first user (dummy implementation)
+    repo = UserRepository(session)
+    user = repo.get_first_user()
+
+    return {
+        "user": {
+            "email": user.email,
+            "username": user.username,
+            "token": token,
         }
     }
 

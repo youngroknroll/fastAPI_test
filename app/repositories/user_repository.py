@@ -26,3 +26,8 @@ class UserRepository:
         self.session.refresh(user)
         return user
 
+    def get_first_user(self) -> Optional[User]:
+        """Get first user (temporary for testing)"""
+        statement = select(User)
+        return self.session.exec(statement).first()
+
