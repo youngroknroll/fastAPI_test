@@ -13,6 +13,11 @@ class UserRepository:
     def __init__(self, session: Session):
         self.session = session
 
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        """Get user by ID"""
+        statement = select(User).where(User.id == user_id)
+        return self.session.exec(statement).first()
+
     def get_by_email(self, email: str) -> Optional[User]:
         """Get user by email"""
         statement = select(User).where(User.email == email)

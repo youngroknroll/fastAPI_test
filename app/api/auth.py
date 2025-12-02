@@ -1,10 +1,13 @@
 """Auth API Router"""
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session
 
 from app.core.database import get_session
+from app.core.dependencies import get_current_user
+from app.core.security import create_access_token
+from app.models.user_model import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user_schema import UserLogin, UserRegister, UserResponse, UserUpdate
 
@@ -47,11 +50,14 @@ def register(request: UserRegisterRequest, session: Session = Depends(get_sessio
         password=user_data.password,
     )
 
+    # Generate JWT token
+    token = create_access_token(user_id=user.id, username=user.username)
+
     return {
         "user": {
             "email": user.email,
             "username": user.username,
-            "token": "dummy-jwt-token",
+            "token": token,
         }
     }
 
@@ -71,31 +77,8 @@ def login(request: UserLoginRequest, session: Session = Depends(get_session)):
     if user.hashed_password != user_data.password:
         raise HTTPException(status_code=422, detail="Invalid password")
 
-    return {
-        "user": {
-            "email": user.email,
-            "username": user.username,
-            "token": "dummy-jwt-token",
-        }
-    }
-
-
-@router.get("/user", status_code=200)
-def get_current_user(
-    authorization: str = Header(None), session: Session = Depends(get_session)
-):
-    """Get current user"""
-    # Check if authorization header exists
-    if authorization is None:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    # For now, just extract email from token (dummy implementation)
-    # Token format: "Token dummy-jwt-token"
-    token = authorization.replace("Token ", "")
-
-    # Get first user (dummy implementation)
-    repo = UserRepository(session)
-    user = repo.get_first_user()
+    # Generate JWT token
+    token = create_access_token(user_id=user.id, username=user.username)
 
     return {
         "user": {
@@ -106,45 +89,54 @@ def get_current_user(
     }
 
 
-@router.put("/user", status_code=200)
-def update_user(
-    request: UserUpdateRequest,
-    authorization: str = Header(None),
-    session: Session = Depends(get_session),
-):
-    """Update user"""
-    # Check if authorization header exists
-    if authorization is None:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    token = authorization.replace("Token ", "")
-    update_data = request.user
-
-    # Get first user (dummy implementation)
-    repo = UserRepository(session)
-    user = repo.get_first_user()
-
-    # Update user fields
-    if update_data.email is not None:
-        user.email = update_data.email
-    if update_data.username is not None:
-        user.username = update_data.username
-    if update_data.password is not None:
-        user.hashed_password = update_data.password
-    if update_data.bio is not None:
-        user.bio = update_data.bio
-    if update_data.image is not None:
-        user.image = update_data.image
-
-    # Save changes
-    session.add(user)
-    session.commit()
-    session.refresh(user)
+@router.get("/user", status_code=200)
+def get_current_user_endpoint(current_user: User = Depends(get_current_user)):
+    """Get current user"""
+    # Generate new token for response
+    token = create_access_token(user_id=current_user.id, username=current_user.username)
 
     return {
         "user": {
-            "email": user.email,
-            "username": user.username,
+            "email": current_user.email,
+            "username": current_user.username,
+            "token": token,
+        }
+    }
+
+
+@router.put("/user", status_code=200)
+def update_user(
+    request: UserUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Update user"""
+    update_data = request.user
+
+    # Update user fields
+    if update_data.email is not None:
+        current_user.email = update_data.email
+    if update_data.username is not None:
+        current_user.username = update_data.username
+    if update_data.password is not None:
+        current_user.hashed_password = update_data.password
+    if update_data.bio is not None:
+        current_user.bio = update_data.bio
+    if update_data.image is not None:
+        current_user.image = update_data.image
+
+    # Save changes
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+
+    # Generate new token
+    token = create_access_token(user_id=current_user.id, username=current_user.username)
+
+    return {
+        "user": {
+            "email": current_user.email,
+            "username": current_user.username,
             "token": token,
         }
     }
