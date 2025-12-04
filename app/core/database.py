@@ -3,6 +3,7 @@
 from sqlmodel import Session, SQLModel, create_engine
 
 # Import models to ensure they are registered
+from app.models.article_model import Article  # noqa: F401
 from app.models.follow_model import Follow  # noqa: F401
 from app.models.user_model import User  # noqa: F401
 
