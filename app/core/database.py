@@ -4,7 +4,9 @@ from sqlmodel import Session, SQLModel, create_engine
 
 # Import models to ensure they are registered
 from app.models.article_model import Article  # noqa: F401
+from app.models.favorite_model import Favorite  # noqa: F401
 from app.models.follow_model import Follow  # noqa: F401
+from app.models.tag_model import ArticleTag, Tag  # noqa: F401
 from app.models.user_model import User  # noqa: F401
 
 DATABASE_URL = "sqlite:///./test.db"

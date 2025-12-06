@@ -20,10 +20,15 @@ class ArticleCreateRequest(BaseModel):
 
 
 @router.get("/articles", status_code=200)
-def get_articles(session: Session = Depends(get_session)):
+def get_articles(
+    author: str = None,
+    tag: str = None,
+    favorited: str = None,
+    session: Session = Depends(get_session),
+):
     """Get articles"""
     service = ArticleService(session)
-    return service.get_articles()
+    return service.get_articles(author=author, tag=tag, favorited=favorited)
 
 
 @router.post("/articles", status_code=201)
@@ -39,6 +44,7 @@ def create_article(
         description=request.article.description,
         body=request.article.body,
         author=current_user,
+        tag_list=request.article.tagList,
     )
 
 
@@ -47,4 +53,15 @@ def get_article(slug: str, session: Session = Depends(get_session)):
     """Get article by slug"""
     service = ArticleService(session)
     return service.get_article_by_slug(slug)
+
+
+@router.post("/articles/{slug}/favorite", status_code=200)
+def favorite_article(
+    slug: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Favorite an article"""
+    service = ArticleService(session)
+    return service.favorite_article(slug=slug, user=current_user)
 

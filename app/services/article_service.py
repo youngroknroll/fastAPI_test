@@ -9,6 +9,8 @@ from sqlmodel import Session
 from app.models.article_model import Article
 from app.models.user_model import User
 from app.repositories.article_repository import ArticleRepository
+from app.repositories.favorite_repository import FavoriteRepository
+from app.repositories.tag_repository import TagRepository
 from app.repositories.user_repository import UserRepository
 
 
@@ -28,9 +30,11 @@ class ArticleService:
         self.session = session
         self.repo = ArticleRepository(session)
         self.user_repo = UserRepository(session)
+        self.tag_repo = TagRepository(session)
+        self.favorite_repo = FavoriteRepository(session)
 
     def create_article(
-        self, title: str, description: str, body: str, author: User
+        self, title: str, description: str, body: str, author: User, tag_list: list[str] = None
     ) -> dict:
         """
         Create a new article
@@ -48,7 +52,11 @@ class ArticleService:
             author_id=author.id,
         )
 
-        return self._format_article_response(article, author)
+        # Add tags if provided
+        if tag_list:
+            self.tag_repo.add_tags_to_article(article.id, tag_list)
+
+        return self._format_article_response(article, author, tag_list or [])
 
     def get_article_by_slug(self, slug: str) -> dict:
         """
@@ -65,26 +73,77 @@ class ArticleService:
             raise HTTPException(status_code=404, detail="Article not found")
 
         author = self.user_repo.get_by_id(article.author_id)
+        tag_list = self.tag_repo.get_tags_for_article(article.id)
 
-        return self._format_article_response(article, author)
+        return self._format_article_response(article, author, tag_list)
 
-    def get_articles(self) -> dict:
+    def get_articles(self, author: str = None, tag: str = None, favorited: str = None) -> dict:
         """
-        Get all articles
+        Get all articles with optional filters
+
+        Args:
+            author: Filter by author username
+            tag: Filter by tag name
+            favorited: Filter by username who favorited
 
         Returns:
             dict: Articles list with count
         """
-        articles = self.repo.get_all()
+        author_id = None
+        if author:
+            author_user = self.user_repo.get_by_username(author)
+            if author_user:
+                author_id = author_user.id
+            else:
+                # Author not found, return empty list
+                return {"articles": [], "articlesCount": 0}
+
+        # Filter by tag
+        article_ids = None
+        if tag:
+            article_ids = self.tag_repo.get_article_ids_by_tag(tag)
+            if not article_ids:
+                return {"articles": [], "articlesCount": 0}
+
+        # Filter by favorited user
+        if favorited:
+            favorited_user = self.user_repo.get_by_username(favorited)
+            if favorited_user:
+                favorited_article_ids = self.favorite_repo.get_article_ids_by_user(favorited_user.id)
+                if not favorited_article_ids:
+                    return {"articles": [], "articlesCount": 0}
+                # Combine with existing article_ids filter
+                if article_ids is not None:
+                    article_ids = list(set(article_ids) & set(favorited_article_ids))
+                else:
+                    article_ids = favorited_article_ids
+            else:
+                return {"articles": [], "articlesCount": 0}
+
+        articles = self.repo.get_all(author_id=author_id, article_ids=article_ids)
 
         articles_data = []
         for article in articles:
-            author = self.user_repo.get_by_id(article.author_id)
-            articles_data.append(self._format_article_response(article, author)["article"])
+            article_author = self.user_repo.get_by_id(article.author_id)
+            tag_list = self.tag_repo.get_tags_for_article(article.id)
+            articles_data.append(self._format_article_response(article, article_author, tag_list)["article"])
 
         return {"articles": articles_data, "articlesCount": len(articles_data)}
 
-    def _format_article_response(self, article: Article, author: User) -> dict:
+    def favorite_article(self, slug: str, user: User) -> dict:
+        """Favorite an article"""
+        article = self.repo.get_by_slug(slug)
+        if article is None:
+            raise HTTPException(status_code=404, detail="Article not found")
+
+        self.favorite_repo.create(user_id=user.id, article_id=article.id)
+
+        author = self.user_repo.get_by_id(article.author_id)
+        tag_list = self.tag_repo.get_tags_for_article(article.id)
+
+        return self._format_article_response(article, author, tag_list)
+
+    def _format_article_response(self, article: Article, author: User, tag_list: list[str] = None) -> dict:
         """Format article response"""
         return {
             "article": {
@@ -92,6 +151,7 @@ class ArticleService:
                 "title": article.title,
                 "description": article.description,
                 "body": article.body,
+                "tagList": tag_list or [],
                 "createdAt": article.created_at.isoformat() + "Z",
                 "updatedAt": article.updated_at.isoformat() + "Z",
                 "author": {

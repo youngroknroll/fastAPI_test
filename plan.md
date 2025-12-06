@@ -41,26 +41,26 @@
 
 * [x] 존재하는 username으로 프로필을 조회하면 profile 객체를 반환한다
 * [x] 로그인하지 않아도 프로필 조회가 가능하다
-* [ ] follow 요청을 보내면 following: true를 반환한다
-* [ ] unfollow 요청을 보내면 following: false를 반환한다
-* [ ] 자신을 follow 하려고 하면 422를 반환한다
+* [x] follow 요청을 보내면 following: true를 반환한다
+* [x] unfollow 요청을 보내면 following: false를 반환한다
+* [x] 자신을 follow 하려고 하면 422를 반환한다
 
 ---
 
 # 6. Articles: Read
 
-* [ ] GET /articles 호출 시 articles 배열을 반환한다
-* [ ] articlesCount를 반환한다
-* [ ] 단일 article 조회 시 slug에 해당하는 article을 반환한다
-* [ ] 존재하지 않는 slug이면 404를 반환한다
+* [x] GET /articles 호출 시 articles 배열을 반환한다
+* [x] articlesCount를 반환한다
+* [x] 단일 article 조회 시 slug에 해당하는 article을 반환한다
+* [x] 존재하지 않는 slug이면 404를 반환한다
 
 ---
 
 # 7. Articles: Filter
 
-* [ ] author=username으로 필터링하면 해당 author 글만 반환한다
-* [ ] tag=…로 필터링하면 해당 tag가 있는 글만 반환한다
-* [ ] favorited=username으로 필터링하면 해당 유저가 좋아한 글만 반환한다
+* [x] author=username으로 필터링하면 해당 author 글만 반환한다
+* [x] tag=…로 필터링하면 해당 tag가 있는 글만 반환한다
+* [x] favorited=username으로 필터링하면 해당 유저가 좋아한 글만 반환한다
 
 ---
 

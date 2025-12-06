@@ -8,6 +8,13 @@ from sqlmodel.pool import StaticPool
 from app.core.database import get_session
 from app.main import app
 
+# Import all models to register them with SQLModel (order matters for FK resolution)
+from app.models.user_model import User  # noqa: F401
+from app.models.follow_model import Follow  # noqa: F401
+from app.models.article_model import Article  # noqa: F401
+from app.models.tag_model import ArticleTag, Tag  # noqa: F401
+from app.models.favorite_model import Favorite  # noqa: F401
+
 
 @pytest.fixture(name="session")
 def session_fixture():

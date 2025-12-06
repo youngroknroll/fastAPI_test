@@ -34,8 +34,15 @@ class ArticleRepository:
         statement = select(Article).where(Article.slug == slug)
         return self.session.exec(statement).first()
 
-    def get_all(self) -> list[Article]:
-        """Get all articles"""
+    def get_all(self, author_id: int = None, article_ids: list[int] = None) -> list[Article]:
+        """Get all articles with optional filters"""
         statement = select(Article)
+
+        if author_id is not None:
+            statement = statement.where(Article.author_id == author_id)
+
+        if article_ids is not None:
+            statement = statement.where(Article.id.in_(article_ids))
+
         return list(self.session.exec(statement).all())
 
