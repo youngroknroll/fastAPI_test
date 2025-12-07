@@ -46,3 +46,18 @@ class ArticleRepository:
 
         return list(self.session.exec(statement).all())
 
+    def update(self, article: Article, **kwargs) -> Article:
+        """Update an article"""
+        for key, value in kwargs.items():
+            if value is not None:
+                setattr(article, key, value)
+        self.session.add(article)
+        self.session.commit()
+        self.session.refresh(article)
+        return article
+
+    def delete(self, article: Article) -> None:
+        """Delete an article"""
+        self.session.delete(article)
+        self.session.commit()
+

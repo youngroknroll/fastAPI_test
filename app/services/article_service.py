@@ -143,6 +143,38 @@ class ArticleService:
 
         return self._format_article_response(article, author, tag_list)
 
+    def update_article(
+        self, slug: str, user: User, title: str = None, description: str = None, body: str = None
+    ) -> dict:
+        """Update an article"""
+        article = self.repo.get_by_slug(slug)
+        if article is None:
+            raise HTTPException(status_code=404, detail="Article not found")
+
+        # Check if user is the author
+        if article.author_id != user.id:
+            raise HTTPException(status_code=403, detail="You are not the author of this article")
+
+        # Update article
+        article = self.repo.update(article, title=title, description=description, body=body)
+
+        author = self.user_repo.get_by_id(article.author_id)
+        tag_list = self.tag_repo.get_tags_for_article(article.id)
+
+        return self._format_article_response(article, author, tag_list)
+
+    def delete_article(self, slug: str, user: User) -> None:
+        """Delete an article"""
+        article = self.repo.get_by_slug(slug)
+        if article is None:
+            raise HTTPException(status_code=404, detail="Article not found")
+
+        # Check if user is the author
+        if article.author_id != user.id:
+            raise HTTPException(status_code=403, detail="You are not the author of this article")
+
+        self.repo.delete(article)
+
     def _format_article_response(self, article: Article, author: User, tag_list: list[str] = None) -> dict:
         """Format article response"""
         return {

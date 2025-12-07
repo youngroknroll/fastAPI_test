@@ -64,25 +64,34 @@
 
 ---
 
-# 8. Articles: Create
+# 8. Articles: Create (순서 오류)
 
-* [ ] 토큰이 있으면 새 article을 생성할 수 있다
-* [ ] 생성된 article은 title을 포함한다
-* [ ] 생성된 article은 slug를 포함한다
-* [ ] 생성된 article은 author 정보를 포함한다
-* [ ] 토큰 없이 article 생성 시 401을 반환한다
+* [x] 토큰이 있으면 새 article을 생성할 수 있다
+* [x] 생성된 article은 title을 포함한다
+* [x] 생성된 article은 slug를 포함한다
+* [x] 생성된 article은 author 정보를 포함한다
+* [x] 토큰 없이 article 생성 시 401을 반환한다
 
 ---
 
 # 9. Articles: Update
 
-* [ ] article 작성자가 수정 요청하면 해당 article이 수정된다
-* [ ] 작성자가 아니면 403을 반환한다
-* [ ] slug가 존재하지 않으면 404를 반환한다
+* [x] article 작성자가 수정 요청하면 해당 article이 수정된다
+* [x] 작성자가 아니면 403을 반환한다
+* [x] slug가 존재하지 않으면 404를 반환한다
 
 ---
 
-# 10. Articles: Favorite
+# 10. Articles: Delete
+
+* [x] article 작성자가 삭제 요청하면 해당 article이 삭제된다
+* [x] 작성자가 아니면 403을 반환한다
+* [x] slug가 존재하지 않으면 404를 반환한다
+* [x] 토큰 없이 삭제 요청 시 401을 반환한다
+
+---
+
+# 11. Articles: Favorite
 
 * [ ] favorite 요청 시 favoritesCount가 증가한다
 * [ ] unfavorite 요청 시 favoritesCount가 감소한다
@@ -90,7 +99,7 @@
 
 ---
 
-# 11. Comments
+# 12. Comments
 
 * [ ] article에 댓글 작성 시 comment 객체를 반환한다
 * [ ] 토큰이 없으면 comment 작성은 401을 반환한다
@@ -100,7 +109,7 @@
 
 ---
 
-# 12. Tags
+# 13. Tags
 
 * [ ] GET /tags 요청 시 문자열 배열을 반환한다
 * [ ] tag가 없으면 빈 배열을 반환한다

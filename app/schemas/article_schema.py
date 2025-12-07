@@ -13,3 +13,11 @@ class ArticleCreate(BaseModel):
     body: str
     tagList: Optional[list[str]] = None
 
+
+class ArticleUpdate(BaseModel):
+    """Article update request"""
+
+    title: Optional[str] = None
+    description: Optional[str] = None
+    body: Optional[str] = None
+
