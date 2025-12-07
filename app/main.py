@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import article, auth, profile
+from app.api import article, auth, comment, profile, tag
 from app.core.database import create_db_and_tables
 
 
@@ -22,6 +22,8 @@ app = FastAPI(title="RealWorld API", version="0.1.0", lifespan=lifespan)
 app.include_router(auth.router)
 app.include_router(profile.router)
 app.include_router(article.router)
+app.include_router(comment.router)
+app.include_router(tag.router)
 
 
 @app.get("/")

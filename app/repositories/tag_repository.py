@@ -48,3 +48,8 @@ class TagRepository:
         )
         return list(self.session.exec(statement).all())
 
+    def get_all_tags(self) -> list[str]:
+        """Get all tag names"""
+        statement = select(Tag.name)
+        return list(self.session.exec(statement).all())
+

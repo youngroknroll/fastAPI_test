@@ -14,6 +14,7 @@ from app.models.follow_model import Follow  # noqa: F401
 from app.models.article_model import Article  # noqa: F401
 from app.models.tag_model import ArticleTag, Tag  # noqa: F401
 from app.models.favorite_model import Favorite  # noqa: F401
+from app.models.comment_model import Comment  # noqa: F401
 
 
 @pytest.fixture(name="session")
