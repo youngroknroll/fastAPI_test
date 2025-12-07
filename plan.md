@@ -93,9 +93,9 @@
 
 # 11. Articles: Favorite
 
-* [ ] favorite 요청 시 favoritesCount가 증가한다
-* [ ] unfavorite 요청 시 favoritesCount가 감소한다
-* [ ] 토큰 없이 favorite 요청 시 401을 반환한다
+* [x] favorite 요청 시 favoritesCount가 증가한다
+* [x] unfavorite 요청 시 favoritesCount가 감소한다
+* [x] 토큰 없이 favorite 요청 시 401을 반환한다
 
 ---
 

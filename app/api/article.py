@@ -100,3 +100,14 @@ def favorite_article(
     service = ArticleService(session)
     return service.favorite_article(slug=slug, user=current_user)
 
+
+@router.delete("/articles/{slug}/favorite", status_code=200)
+def unfavorite_article(
+    slug: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Unfavorite an article"""
+    service = ArticleService(session)
+    return service.unfavorite_article(slug=slug, user=current_user)
+

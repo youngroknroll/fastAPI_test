@@ -41,3 +41,8 @@ class FavoriteRepository:
         )
         return self.session.exec(statement).first() is not None
 
+    def count_by_article(self, article_id: int) -> int:
+        """Count favorites for an article"""
+        statement = select(Favorite).where(Favorite.article_id == article_id)
+        return len(list(self.session.exec(statement).all()))
+

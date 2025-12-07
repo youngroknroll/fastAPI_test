@@ -141,7 +141,20 @@ class ArticleService:
         author = self.user_repo.get_by_id(article.author_id)
         tag_list = self.tag_repo.get_tags_for_article(article.id)
 
-        return self._format_article_response(article, author, tag_list)
+        return self._format_article_response(article, author, tag_list, current_user=user)
+
+    def unfavorite_article(self, slug: str, user: User) -> dict:
+        """Unfavorite an article"""
+        article = self.repo.get_by_slug(slug)
+        if article is None:
+            raise HTTPException(status_code=404, detail="Article not found")
+
+        self.favorite_repo.delete(user_id=user.id, article_id=article.id)
+
+        author = self.user_repo.get_by_id(article.author_id)
+        tag_list = self.tag_repo.get_tags_for_article(article.id)
+
+        return self._format_article_response(article, author, tag_list, current_user=user)
 
     def update_article(
         self, slug: str, user: User, title: str = None, description: str = None, body: str = None
@@ -175,8 +188,15 @@ class ArticleService:
 
         self.repo.delete(article)
 
-    def _format_article_response(self, article: Article, author: User, tag_list: list[str] = None) -> dict:
+    def _format_article_response(
+        self, article: Article, author: User, tag_list: list[str] = None, current_user: User = None
+    ) -> dict:
         """Format article response"""
+        favorites_count = self.favorite_repo.count_by_article(article.id)
+        favorited = False
+        if current_user:
+            favorited = self.favorite_repo.is_favorited(current_user.id, article.id)
+
         return {
             "article": {
                 "slug": article.slug,
@@ -186,6 +206,8 @@ class ArticleService:
                 "tagList": tag_list or [],
                 "createdAt": article.created_at.isoformat() + "Z",
                 "updatedAt": article.updated_at.isoformat() + "Z",
+                "favoritesCount": favorites_count,
+                "favorited": favorited,
                 "author": {
                     "username": author.username,
                     "bio": author.bio,
