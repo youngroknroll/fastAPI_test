@@ -8,62 +8,62 @@
 ## 🔴 Phase 1: 인증 시스템 수정 (필수)
 
 ### 1.1 JWT 토큰 구현
-- [ ] JWT 라이브러리 추가 (`PyJWT`)
-- [ ] 토큰 생성 함수 작성 (`create_access_token`)
-- [ ] 토큰 검증 함수 작성 (`verify_token`)
-- [ ] `app/core/security.py` 파일 생성
+- [x] JWT 라이브러리 추가 (`PyJWT`)
+- [x] 토큰 생성 함수 작성 (`create_access_token`)
+- [x] 토큰 검증 함수 작성 (`verify_token`)
+- [x] `app/core/security.py` 파일 생성
 
 ### 1.2 인증 의존성 함수 생성
-- [ ] `get_current_user` 의존성 함수 작성 (토큰에서 user 추출)
-- [ ] `app/core/dependencies.py` 파일 생성
-- [ ] 모든 엔드포인트에서 `get_first_user()` 제거
-- [ ] `Depends(get_current_user)` 사용
+- [x] `get_current_user` 의존성 함수 작성 (토큰에서 user 추출)
+- [x] `app/core/dependencies.py` 파일 생성
+- [x] 모든 엔드포인트에서 `get_first_user()` 제거
+- [x] `Depends(get_current_user)` 사용
 
 ### 1.3 기존 코드 수정
-- [ ] `register`: JWT 토큰 생성하여 반환
-- [ ] `login`: JWT 토큰 생성하여 반환
-- [ ] `get_current_user`: 의존성 함수로 변경
-- [ ] `update_user`: 의존성 사용
-- [ ] `follow_user`: 의존성 사용
-- [ ] `unfollow_user`: 의존성 사용
+- [x] `register`: JWT 토큰 생성하여 반환
+- [x] `login`: JWT 토큰 생성하여 반환
+- [x] `get_current_user`: 의존성 함수로 변경
+- [x] `update_user`: 의존성 사용
+- [x] `follow_user`: 의존성 사용
+- [x] `unfollow_user`: 의존성 사용
 
 ---
 
 ## 🟡 Phase 2: Service 레이어 추가 (강력 추천)
 
 ### 2.1 Service 파일 생성
-- [ ] `app/services/user_service.py` 생성
-- [ ] `app/services/profile_service.py` 생성
+- [x] `app/services/user_service.py` 생성
+- [x] `app/services/profile_service.py` 생성
 
 ### 2.2 비즈니스 로직 이동
 
 **UserService:**
-- [ ] `register_user(email, username, password)` - 중복 체크 포함
-- [ ] `login_user(email, password)` - 인증 로직
-- [ ] `update_user(user_id, update_data)` - 업데이트 로직
-- [ ] `get_user_by_id(user_id)` - 조회
+- [x] `register_user(email, username, password)` - 중복 체크 포함
+- [x] `login_user(email, password)` - 인증 로직
+- [x] `update_user(user_id, update_data)` - 업데이트 로직
+- [x] `get_user_by_id(user_id)` - 조회
 
 **ProfileService:**
-- [ ] `get_profile(username, current_user_id=None)` - following 상태 체크
-- [ ] `follow_user(follower_id, followee_username)` - 팔로우 로직
-- [ ] `unfollow_user(follower_id, followee_username)` - 언팔로우 로직
+- [x] `get_profile(username, current_user_id=None)` - following 상태 체크
+- [x] `follow_user(follower_id, followee_username)` - 팔로우 로직
+- [x] `unfollow_user(follower_id, followee_username)` - 언팔로우 로직
 
 ### 2.3 Repository 확장
 
 **FollowRepository 생성:**
-- [ ] `app/repositories/follow_repository.py` 생성
-- [ ] `create_follow(follower_id, followee_id)` 메서드
-- [ ] `delete_follow(follower_id, followee_id)` 메서드
-- [ ] `is_following(follower_id, followee_id)` 메서드
+- [x] `app/repositories/follow_repository.py` 생성
+- [x] `create_follow(follower_id, followee_id)` 메서드
+- [x] `delete_follow(follower_id, followee_id)` 메서드
+- [x] `is_following(follower_id, followee_id)` 메서드
 
 **UserRepository 확장:**
-- [ ] `get_by_id(user_id)` 메서드 추가
+- [x] `get_by_id(user_id)` 메서드 추가
 - [ ] `update(user, **kwargs)` 메서드 추가
 
 ### 2.4 API 레이어 수정
-- [ ] `auth.py`: Service 호출로 변경
-- [ ] `profile.py`: Service 호출로 변경
-- [ ] 직접 DB 쿼리 제거 (profile.py line 90-96)
+- [x] `auth.py`: Service 호출로 변경
+- [x] `profile.py`: Service 호출로 변경
+- [x] 직접 DB 쿼리 제거 (profile.py line 90-96)
 
 ---
 
@@ -126,6 +126,20 @@
 
 ## 🚨 현재 발견된 주요 문제점
 
+### 0. Null 체크 누락 (잠재적 버그)
+```python
+# ❌ 문제 코드 (comment_service.py, article_service.py)
+for comment in comments:
+    author = self.user_repo.get_by_id(comment.author_id)  # author가 None일 수 있음
+    comments_data.append(self._format_comment_response(comment, author)["comment"])
+    # author.username 접근 시 AttributeError 발생 가능
+
+# ✅ 수정 방안
+# 1. author가 None인 경우 건너뛰기
+# 2. author가 None인 경우 기본값 사용
+# 3. FK CASCADE로 유저 삭제 시 댓글도 삭제
+```
+
 ### 1. 레이어드 아키텍처 위반
 ```
 현재: API Router → Repository (직접 호출) ❌
@@ -177,18 +191,18 @@ def some_endpoint(current_user: User = Depends(get_current_user)):
 
 ## 📝 진행 상황
 
-- [ ] Phase 1: 인증 시스템 수정
-- [ ] Phase 2: Service 레이어 추가
+- [x] Phase 1: 인증 시스템 수정
+- [x] Phase 2: Service 레이어 추가
 - [ ] Phase 3: 코드 품질 개선 (선택)
 
 ---
 
 ## ✅ 완료 후 확인사항
 
-- [ ] 모든 기존 테스트 통과 (20개)
-- [ ] 새로운 버그 없음
-- [ ] 레이어드 아키텍처 준수
-- [ ] 인증이 올바르게 작동 (여러 유저 시나리오)
+- [x] 모든 기존 테스트 통과 (49개)
+- [x] 새로운 버그 없음
+- [x] 레이어드 아키텍처 준수
+- [x] 인증이 올바르게 작동 (여러 유저 시나리오)
 - [ ] 코드 중복 최소화
 
 ---
@@ -207,6 +221,6 @@ def some_endpoint(current_user: User = Depends(get_current_user)):
 
 ---
 
-**마지막 업데이트:** 2025-12-01  
-**상태:** 준비 완료
+**마지막 업데이트:** 2025-12-07  
+**상태:** Phase 1, 2 완료 / Phase 3 진행 가능
 
