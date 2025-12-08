@@ -85,6 +85,178 @@
 
 ---
 
+## 🔵 Phase 4: 인터페이스 분리 (결합도 낮추기)
+
+> 목적: SOLID 원칙 중 DIP(의존성 역전 원칙) 적용으로 결합도를 낮추고 테스트 용이성 향상
+
+### 4.1 커스텀 예외 도입
+
+**현재 문제:**
+```python
+# Service 계층에서 FastAPI에 직접 의존 ❌
+from fastapi import HTTPException
+
+class ArticleService:
+    def get_article_by_slug(self, slug: str):
+        if article is None:
+            raise HTTPException(status_code=404, detail="Article not found")
+```
+
+**왜 문제인가?**
+| 문제 | 설명 |
+|------|------|
+| 프레임워크 종속 | FastAPI → Flask/Django 전환 시 모든 Service 수정 필요 |
+| 테스트 어려움 | 단위 테스트에서 HTTPException import 필요 |
+| 계층 위반 | Service(비즈니스)가 Web(인프라)에 의존 |
+| 재사용 불가 | CLI, 배치 작업에서 Service 재사용 불가 |
+
+**해결 방안:**
+```python
+# app/core/exceptions.py - 도메인 예외 정의
+class DomainException(Exception):
+    def __init__(self, message: str, code: str = "ERROR"):
+        self.message = message
+        self.code = code
+
+class NotFoundError(DomainException): ...
+class ValidationError(DomainException): ...
+class ForbiddenError(DomainException): ...
+class UnauthorizedError(DomainException): ...
+
+# Service - 프레임워크 독립적 ✅
+class ArticleService:
+    def get_article_by_slug(self, slug: str):
+        if article is None:
+            raise NotFoundError("Article not found")
+
+# API - 예외 핸들러에서 변환
+@app.exception_handler(NotFoundError)
+def handle_not_found(request, exc):
+    return JSONResponse(status_code=404, content={"detail": exc.message})
+```
+
+**체크리스트:**
+- [ ] `app/core/exceptions.py` 생성
+- [ ] `NotFoundError`, `ValidationError`, `ForbiddenError`, `UnauthorizedError` 정의
+- [ ] `app/main.py`에 예외 핸들러 등록
+- [ ] 모든 Service에서 `HTTPException` → 커스텀 예외로 변경
+- [ ] 테스트 통과 확인
+
+---
+
+### 4.2 Repository Protocol (인터페이스) 도입
+
+**현재 문제:**
+```python
+# Service가 구체 클래스에 직접 의존 ❌
+class ArticleService:
+    def __init__(self, session: Session):
+        self.repo = ArticleRepository(session)        # 직접 생성
+        self.user_repo = UserRepository(session)      # 직접 생성
+```
+
+**왜 문제인가?**
+| 문제 | 설명 |
+|------|------|
+| 강한 결합 | Service가 특정 Repository 구현에 묶임 |
+| 테스트 어려움 | 실제 DB 없이 테스트 불가 (Mock 어려움) |
+| 확장성 부족 | 캐시 Repository, 외부 API Repository로 교체 어려움 |
+
+**해결 방안:**
+```python
+# app/core/interfaces/repositories.py - Protocol 정의
+from typing import Protocol, Optional
+from app.models.article_model import Article
+
+class IArticleRepository(Protocol):
+    def get_by_slug(self, slug: str) -> Optional[Article]: ...
+    def create(self, **kwargs) -> Article: ...
+    def delete(self, article: Article) -> None: ...
+
+class IUserRepository(Protocol):
+    def get_by_id(self, user_id: int) -> Optional[User]: ...
+    def get_by_email(self, email: str) -> Optional[User]: ...
+    def get_by_username(self, username: str) -> Optional[User]: ...
+
+# Service - 인터페이스에 의존 ✅
+class ArticleService:
+    def __init__(
+        self,
+        article_repo: IArticleRepository,
+        user_repo: IUserRepository,
+    ):
+        self.repo = article_repo
+        self.user_repo = user_repo
+
+# 테스트 - Mock 주입 가능 ✅
+class MockArticleRepository:
+    def get_by_slug(self, slug: str):
+        return Article(slug=slug, title="Test")
+
+def test_get_article():
+    mock_repo = MockArticleRepository()
+    service = ArticleService(article_repo=mock_repo, user_repo=mock_user_repo)
+    result = service.get_article_by_slug("test")
+    assert result["article"]["slug"] == "test"
+```
+
+**이점:**
+- ✅ 단위 테스트에서 DB 없이 Mock으로 테스트 가능
+- ✅ 캐시 레이어 추가 시 Service 코드 변경 없음
+- ✅ 외부 API로 데이터 소스 변경 가능
+- ✅ SOLID - DIP(의존성 역전 원칙) 준수
+
+**체크리스트:**
+- [ ] `app/core/interfaces/__init__.py` 생성
+- [ ] `app/core/interfaces/repositories.py` 생성
+- [ ] `IUserRepository` Protocol 정의
+- [ ] `IArticleRepository` Protocol 정의
+- [ ] `ICommentRepository` Protocol 정의
+- [ ] `IFollowRepository` Protocol 정의
+- [ ] `ITagRepository` Protocol 정의
+- [ ] `IFavoriteRepository` Protocol 정의
+- [ ] 모든 Service 생성자를 인터페이스 의존으로 변경
+- [ ] API 레이어에서 Repository 주입하도록 변경
+- [ ] 테스트 통과 확인
+
+---
+
+### 4.3 적용 대상 분석
+
+**Repository 인터페이스 필요 목록:**
+
+| Repository | 사용하는 Service | 주요 메서드 |
+|------------|------------------|-------------|
+| `UserRepository` | UserService, ProfileService, CommentService, ArticleService | `get_by_id`, `get_by_email`, `get_by_username`, `create` |
+| `ArticleRepository` | ArticleService, CommentService | `get_by_slug`, `create`, `get_all`, `update`, `delete` |
+| `FollowRepository` | ProfileService | `create`, `delete`, `is_following` |
+| `CommentRepository` | CommentService | `create`, `get_by_id`, `get_by_article_id`, `delete` |
+| `TagRepository` | ArticleService | `add_tags_to_article`, `get_tags_for_article`, `get_article_ids_by_tag`, `get_all_tags` |
+| `FavoriteRepository` | ArticleService | `create`, `delete`, `count_by_article`, `is_favorited`, `get_article_ids_by_user` |
+
+---
+
+### 4.4 우선순위
+
+| 순위 | 항목 | 효과 | 난이도 | 예상 시간 |
+|------|------|------|--------|-----------|
+| 1️⃣ | 커스텀 예외 | Service 프레임워크 독립 | 쉬움 | 30분 |
+| 2️⃣ | Repository Protocol | 테스트 용이성, 느슨한 결합 | 중간 | 1시간 |
+
+---
+
+### 4.5 언제 안 해도 되나?
+
+| 상황 | 리팩토링 필요성 |
+|------|----------------|
+| 소규모 개인 프로젝트 | ❌ 오버엔지니어링 |
+| 프레임워크 변경 가능성 없음 | ⚠️ 선택적 |
+| 팀 프로젝트 / 장기 유지보수 | ✅ 필수 |
+| 테스트 커버리지 중요 | ✅ 필수 |
+| 마이크로서비스 전환 예정 | ✅ 필수 |
+
+---
+
 ## 📊 우선순위 정리
 
 ### 🎯 지금 반드시 해야 할 것:
@@ -194,6 +366,7 @@ def some_endpoint(current_user: User = Depends(get_current_user)):
 - [x] Phase 1: 인증 시스템 수정
 - [x] Phase 2: Service 레이어 추가
 - [ ] Phase 3: 코드 품질 개선 (선택)
+- [ ] Phase 4: 인터페이스 분리 (선택)
 
 ---
 
