@@ -1,7 +1,7 @@
 """Articles: Create Tests"""
 
 
-def test_토큰이_있으면_새_article을_생성할_수_있다(client):
+def test_토큰이_있으면_새_article을_작성할_수_있다(client):
     # given: 유저 등록
     user_payload = {
         "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}

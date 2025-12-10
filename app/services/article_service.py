@@ -22,7 +22,6 @@ def slugify(title: str) -> str:
     slug = slug.strip("-")
     return slug
 
-
 class ArticleService:
     """Article business logic"""
 
@@ -216,4 +215,3 @@ class ArticleService:
                 },
             }
         }
-

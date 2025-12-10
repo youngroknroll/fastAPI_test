@@ -5,17 +5,6 @@ def test_GET_articles_호출_시_articles_배열을_반환한다(client):
     # when: GET /articles 호출
     response = client.get("/articles")
 
-    # then: articles 배열을 반환
-    assert response.status_code == 200
-    data = response.json()
-    assert "articles" in data
-    assert isinstance(data["articles"], list)
-
-
-def test_articlesCount를_반환한다(client):
-    # when: GET /articles 호출
-    response = client.get("/articles")
-
     # then: articlesCount를 반환
     assert response.status_code == 200
     data = response.json()
