@@ -70,8 +70,7 @@ def user2_header(user2_payload):
     headers = {"Authorization": f"Token {user2_payload}"}
     return headers
     
-
-
+    
 #article payload
 @pytest.fixture(name="article_payload")
 def article_payload():
@@ -79,3 +78,21 @@ def article_payload():
         "article": {"title": "Test Article", "description": "Test Desc", "body": "Test Body"}
     }
     return payload
+
+#article API
+class ArticleAPI:
+    def __init__(self, client):
+        self._client = client
+
+    def create(self, payload, headers=None):
+        return self._client.post("/articles", json=payload, headers=headers)
+
+    def delete(self, slug, headers=None):
+        return self._client.delete(f"/articles/{slug}", headers=headers)
+
+    def get(self, slug, headers=None):
+        return self._client.get(f"/articles/{slug}", headers=headers)
+    
+@pytest.fixture
+def article_api(client):
+    return ArticleAPI(client)
