@@ -8,15 +8,7 @@ from sqlmodel.pool import StaticPool
 from app.core.database import get_session
 from app.main import app
 
-# Import all models to register them with SQLModel (order matters for FK resolution)
-from app.models.user_model import User  # noqa: F401
-from app.models.follow_model import Follow  # noqa: F401
-from app.models.article_model import Article  # noqa: F401
-from app.models.tag_model import ArticleTag, Tag  # noqa: F401
-from app.models.favorite_model import Favorite  # noqa: F401
-from app.models.comment_model import Comment  # noqa: F401
-
-
+# DB
 @pytest.fixture(name="session")
 def session_fixture():
     """Create a test database session"""
@@ -29,36 +21,78 @@ def session_fixture():
     with Session(engine) as session:
         yield session
 
-
+# client session
 @pytest.fixture(name="client")
 def client_fixture(session: Session):
     """Create a test client with test database"""
-
     def get_session_override():
-        return session
+        yield session
 
     app.dependency_overrides[get_session] = get_session_override
-    client = TestClient(app)
-    yield client
-    app.dependency_overrides.clear()
+    
+    try:
+        with TestClient(app) as client:
+            yield client
+    finally:            
+        app.dependency_overrides.clear()
 
 
-@pytest.fixture(name="user1_token")
-def token_fixture(client):
-        # given: 유저 등록 및 article 생성
-    user_payload = {
-        "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}
+# user payload
+@pytest.fixture(name="user1_payload")
+def user1_payload(client):
+    # user1 등록
+    user1_payload = {
+        "user": {"email": "user1@example.com", "password": "password123", "username": "user1"}
     }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
+    #토큰
+    response = client.post("/users", json=user1_payload)
+    token = response.json()["user"]["token"]
     return token
 
-@pytest.fixture(name="user2_token")
-def token_fixture(client):
+@pytest.fixture(name="user2_payload")
+def user2_payload(client):
     # 유저2 등록
     user2_payload = {
         "user": {"email": "user2@example.com", "password": "password123", "username": "user2"}
     }
-    user2_response = client.post("/users", json=user2_payload)
-    user2_token = user2_response.json()["user"]["token"]
-    return user2_token
+    #토큰
+    response  = client.post("/users", json=user2_payload)
+    token = response.json()["user"]["token"]
+    return token
+
+@pytest.fixture(name="user1_header")
+def user1_header(user1_payload):
+    headers = {"Authorization": f"Token {user1_payload}"}
+    return headers
+    
+@pytest.fixture(name="user2_header")
+def user2_header(user2_payload):
+    headers = {"Authorization": f"Token {user2_payload}"}
+    return headers
+    
+    
+#article payload
+@pytest.fixture(name="article_payload")
+def article_payload():
+    payload = {
+        "article": {"title": "Test Article", "description": "Test Desc", "body": "Test Body"}
+    }
+    return payload
+
+#article API
+class ArticleAPI:
+    def __init__(self, client):
+        self._client = client
+
+    def create(self, payload, headers=None):
+        return self._client.post("/articles", json=payload, headers=headers)
+
+    def delete(self, slug, headers=None):
+        return self._client.delete(f"/articles/{slug}", headers=headers)
+
+    def get(self, slug, headers=None):
+        return self._client.get(f"/articles/{slug}", headers=headers)
+    
+@pytest.fixture
+def article_api(client):
+    return ArticleAPI(client)
