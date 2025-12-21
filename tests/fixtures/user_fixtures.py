@@ -25,16 +25,16 @@ def user2_token(client):
     return token
 
 
-@pytest.fixture(name="user1_header")
-def user1_header(user1_payload):
+@pytest.fixture
+def user1_header(user1_token):
     """user1 인증 헤더"""
-    headers = {"Authorization": f"Token {user1_payload}"}
+    headers = {"Authorization": f"Token {user1_token}"}
     return headers
 
 
-@pytest.fixture(name="user2_header")
-def user2_header(user2_payload):
+@pytest.fixture
+def user2_header(user2_token):
     """user2 인증 헤더"""
-    headers = {"Authorization": f"Token {user2_payload}"}
+    headers = {"Authorization": f"Token {user2_token}"}
     return headers
 
