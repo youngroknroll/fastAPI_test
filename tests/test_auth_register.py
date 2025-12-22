@@ -1,126 +1,53 @@
 """Auth: Register Tests"""
+from tests.conftest import Status
+from tests.fixtures.auth_fixtures import DEFAULT_EMAIL, DEFAULT_USERNAME
 
 
-def test_올바른_요청을_보내면_새_유저_객체를_반환한다(client):
-    # given
-    payload = {
-        "user": {
-            "email": "test@example.com",
-            "password": "password123",
-            "username": "testuser",
-        }
-    }
+def test_회원가입하면_유저_정보를_반환한다(auth_api):
+    결과 = auth_api.register()
 
-    # when
-    response = client.post("/users", json=payload)
-
-    # then
-    assert response.status_code == 201
-    data = response.json()
-    assert "user" in data
+    assert Status.of(결과) == Status.CREATED
+    assert "user" in 결과.json()
 
 
-def test_반환된_유저_객체는_email을_포함한다(client):
-    # given
-    payload = {
-        "user": {
-            "email": "test@example.com",
-            "password": "password123",
-            "username": "testuser",
-        }
-    }
+def test_회원가입하면_입력한_이메일이_저장된다(auth_api):
+    결과 = auth_api.register()
 
-    # when
-    response = client.post("/users", json=payload)
-
-    # then
-    assert response.status_code == 201
-    data = response.json()
-    assert data["user"]["email"] == "test@example.com"
+    assert Status.of(결과) == Status.CREATED
+    assert 결과.json()["user"]["email"] == DEFAULT_EMAIL
 
 
-def test_반환된_유저_객체는_username을_포함한다(client):
-    # given
-    payload = {
-        "user": {
-            "email": "test@example.com",
-            "password": "password123",
-            "username": "testuser",
-        }
-    }
+def test_회원가입하면_입력한_username이_저장된다(auth_api):
+    결과 = auth_api.register()
 
-    # when
-    response = client.post("/users", json=payload)
-
-    # then
-    assert response.status_code == 201
-    data = response.json()
-    assert data["user"]["username"] == "testuser"
+    assert Status.of(결과) == Status.CREATED
+    assert 결과.json()["user"]["username"] == DEFAULT_USERNAME
 
 
-def test_반환된_유저_객체는_token을_포함한다(client):
-    # given
-    payload = {
-        "user": {
-            "email": "test@example.com",
-            "password": "password123",
-            "username": "testuser",
-        }
-    }
+def test_회원가입하면_토큰을_발급받는다(auth_api):
+    결과 = auth_api.register()
 
-    # when
-    response = client.post("/users", json=payload)
-
-    # then
-    assert response.status_code == 201
-    data = response.json()
-    assert "token" in data["user"]
-    assert isinstance(data["user"]["token"], str)
-    assert len(data["user"]["token"]) > 0
+    assert Status.of(결과) == Status.CREATED
+    token = 결과.json()["user"]["token"]
+    assert isinstance(token, str)
+    assert len(token) > 0
 
 
-def test_이미_존재하는_이메일이면_422를_반환한다(client):
-    # given: 먼저 유저를 등록
-    payload = {
-        "user": {
-            "email": "duplicate@example.com",
-            "password": "password123",
-            "username": "user1",
-        }
-    }
-    client.post("/users", json=payload)
+def test_이미_사용중인_이메일로는_가입할_수_없다(auth_api):
+    auth_api.register()
 
-    # when: 같은 이메일로 다시 등록 시도
-    duplicate_payload = {
-        "user": {
-            "email": "duplicate@example.com",
-            "password": "password456",
-            "username": "user2",
-        }
-    }
-    response = client.post("/users", json=duplicate_payload)
+    결과 = auth_api.register(username="user2")  # 같은 이메일로 재가입 시도
 
-    # then
-    assert response.status_code == 422
+    assert Status.of(결과) == Status.VALIDATION_ERROR
 
 
-def test_비밀번호가_없으면_422를_반환한다(client):
-    # given: 비밀번호 없는 요청
-    payload = {"user": {"email": "test@example.com", "username": "testuser"}}
+def test_비밀번호_없이는_가입할_수_없다(auth_api):
+    결과 = auth_api.register(password=None)
 
-    # when
-    response = client.post("/users", json=payload)
-
-    # then
-    assert response.status_code == 422
+    assert Status.of(결과) == Status.VALIDATION_ERROR
 
 
-def test_username이_비어_있으면_422를_반환한다(client):
-    # given: username 없는 요청
-    payload = {"user": {"email": "test@example.com", "password": "password123"}}
+def test_username_없이는_가입할_수_없다(auth_api):
+    결과 = auth_api.register(username=None)
 
-    # when
-    response = client.post("/users", json=payload)
-
-    # then
-    assert response.status_code == 422
+    assert Status.of(결과) == Status.VALIDATION_ERROR

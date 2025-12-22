@@ -11,9 +11,10 @@ from tests.fixtures.user_fixtures import (
 )
 
 # Article fixtures
-from tests.fixtures.article_fixtures import (
-    article_api,
-)
+from tests.fixtures.article_fixtures import article_api
+
+# Auth fixtures
+from tests.fixtures.auth_fixtures import auth_api
 
 
 class Status:
@@ -24,6 +25,7 @@ class Status:
     NOT_FOUND = "찾을 수 없음"
     FORBIDDEN = "권한 없음"
     UNAUTHORIZED = "인증 필요"
+    VALIDATION_ERROR = "유효성 오류"
     
     _CODE_MAP = {
         200: "성공",
@@ -32,6 +34,7 @@ class Status:
         401: "인증 필요",
         403: "권한 없음",
         404: "찾을 수 없음",
+        422: "유효성 오류",
     }
     
     @classmethod
