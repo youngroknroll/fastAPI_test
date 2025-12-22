@@ -1,74 +1,32 @@
 """Articles: Update Tests"""
+from tests.conftest import ARTICLE_PAYLOAD, Status
 
 
-def test_slug가_존재하지_않으면_404를_반환한다(client):
-    # given: 유저 등록
-    user_payload = {
-        "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}
-    }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
-    headers = {"Authorization": f"Token {token}"}
+def test_자신의_게시글을_수정할_수_있다(로그인_유저1_api):
+    작성된_글 = 로그인_유저1_api.create(ARTICLE_PAYLOAD).json()["article"]
+    slug = 작성된_글["slug"]
 
-    # when: 존재하지 않는 slug로 수정 요청
-    update_payload = {"article": {"title": "Updated Title"}}
-    response = client.put("/articles/non-existent-slug", json=update_payload, headers=headers)
+    새_내용 = {"article": {"title": "Updated Title"}}
+    수정_결과 = 로그인_유저1_api.update(slug, 새_내용)
 
-    # then: 404 반환
-    assert response.status_code == 404
+    assert Status.of(수정_결과) == Status.SUCCESS
+    assert 수정_결과.json()["article"]["title"] == "Updated Title"
 
 
-def test_article_작성자가_수정_요청하면_해당_article이_수정된다(client):
-    # given: 유저 등록 및 article 생성
-    user_payload = {
-        "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}
-    }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
-    headers = {"Authorization": f"Token {token}"}
+def test_다른_사람의_게시글은_수정할_수_없다(로그인_유저1_api, 로그인_유저2_api):
+    작성된_글 = 로그인_유저1_api.create(ARTICLE_PAYLOAD).json()["article"]
+    slug = 작성된_글["slug"]
 
-    article_payload = {
-        "article": {"title": "Original Title", "description": "Desc", "body": "Body"}
-    }
-    create_response = client.post("/articles", json=article_payload, headers=headers)
-    slug = create_response.json()["article"]["slug"]
+    새_내용 = {"article": {"title": "Hacked Title"}}
+    수정_결과 = 로그인_유저2_api.update(slug, 새_내용)
 
-    # when: article 수정
-    update_payload = {"article": {"title": "Updated Title"}}
-    response = client.put(f"/articles/{slug}", json=update_payload, headers=headers)
-
-    # then: 200 반환 및 title 수정됨
-    assert response.status_code == 200
-    assert response.json()["article"]["title"] == "Updated Title"
+    assert Status.of(수정_결과) == Status.FORBIDDEN
 
 
-def test_작성자가_아니면_403을_반환한다(client):
-    # given: 유저1이 article 생성, 유저2가 수정 시도
-    user1_payload = {
-        "user": {"email": "user1@example.com", "password": "password123", "username": "user1"}
-    }
-    user1_response = client.post("/users", json=user1_payload)
-    user1_token = user1_response.json()["user"]["token"]
-    headers1 = {"Authorization": f"Token {user1_token}"}
+def test_존재하지_않는_게시글은_수정할_수_없다(로그인_유저1_api):
+    존재하지_않는_slug = "non-existent-slug"
 
-    article_payload = {
-        "article": {"title": "User1 Article", "description": "Desc", "body": "Body"}
-    }
-    create_response = client.post("/articles", json=article_payload, headers=headers1)
-    slug = create_response.json()["article"]["slug"]
+    새_내용 = {"article": {"title": "Updated Title"}}
+    수정_결과 = 로그인_유저1_api.update(존재하지_않는_slug, 새_내용)
 
-    # 유저2 등록
-    user2_payload = {
-        "user": {"email": "user2@example.com", "password": "password123", "username": "user2"}
-    }
-    user2_response = client.post("/users", json=user2_payload)
-    user2_token = user2_response.json()["user"]["token"]
-    headers2 = {"Authorization": f"Token {user2_token}"}
-
-    # when: 유저2가 유저1의 article 수정 시도
-    update_payload = {"article": {"title": "Hacked Title"}}
-    response = client.put(f"/articles/{slug}", json=update_payload, headers=headers2)
-
-    # then: 403 반환
-    assert response.status_code == 403
-
+    assert Status.of(수정_결과) == Status.NOT_FOUND

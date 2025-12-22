@@ -22,6 +22,18 @@ class ArticleAPI:
     def get(self, slug):
         return self._client.get(f"/articles/{slug}", headers=self._get_headers())
 
+    def update(self, slug, payload):
+        return self._client.put(f"/articles/{slug}", json=payload, headers=self._get_headers())
+
+    def list(self, **params):
+        return self._client.get("/articles", params=params, headers=self._get_headers())
+
+    def favorite(self, slug):
+        return self._client.post(f"/articles/{slug}/favorite", headers=self._get_headers())
+
+    def unfavorite(self, slug):
+        return self._client.delete(f"/articles/{slug}/favorite", headers=self._get_headers())
+
 
 @pytest.fixture
 def article_api(client):
