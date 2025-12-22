@@ -3,11 +3,16 @@
 from datetime import datetime, timedelta
 
 import jwt
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
 # JWT 설정 (실제 프로덕션에서는 환경변수로 관리)
 SECRET_KEY = "your-secret-key-change-this-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+
+# Argon2 설정
+ph = PasswordHasher()
 
 
 def create_access_token(user_id: int, username: str) -> str:
@@ -31,4 +36,18 @@ def verify_token(token: str) -> dict:
         raise ValueError("Token has expired")
     except jwt.InvalidTokenError:
         raise ValueError("Invalid token")
+
+
+def hash_password(password: str) -> str:
+    """비밀번호를 Argon2로 해싱"""
+    return ph.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """비밀번호 검증"""
+    try:
+        ph.verify(hashed_password, plain_password)
+        return True
+    except VerifyMismatchError:
+        return False
 
