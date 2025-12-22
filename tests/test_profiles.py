@@ -1,108 +1,66 @@
 """Profiles Tests"""
+from tests.conftest import Status
+from tests.fixtures.auth_fixtures import AuthAPI
 
 
-def test_존재하는_username으로_프로필을_조회하면_profile_객체를_반환한다(client):
-    # given: 유저를 등록
-    register_payload = {
-        "user": {
-            "email": "profile@example.com",
-            "password": "password123",
-            "username": "profileuser",
-        }
-    }
-    client.post("/users", json=register_payload)
+def test_다른_유저의_프로필을_조회할_수_있다(auth_api):
+    auth_api.register(username="profileuser")
 
-    # when: username으로 프로필 조회
-    response = client.get("/profiles/profileuser")
+    결과 = auth_api.get_profile("profileuser")
 
-    # then: profile 객체를 반환
-    assert response.status_code == 200
-    data = response.json()
-    assert "profile" in data
+    assert Status.of(결과) == Status.SUCCESS
+    assert "profile" in 결과.json()
 
 
-def test_로그인하지_않아도_프로필_조회가_가능하다(client):
-    # given: 유저를 등록
-    register_payload = {
-        "user": {
-            "email": "public@example.com",
-            "password": "password123",
-            "username": "publicuser",
-        }
-    }
-    client.post("/users", json=register_payload)
+def test_로그인하지_않아도_프로필을_조회할_수_있다(client):
+    # 유저 등록
+    auth = AuthAPI(client)
+    auth.register(username="publicuser")
 
-    # when: Authorization 헤더 없이 프로필 조회
-    response = client.get("/profiles/publicuser")
+    # 비로그인 상태로 프로필 조회
+    guest = AuthAPI(client)
+    결과 = guest.get_profile("publicuser")
 
-    # then: 200 반환
-    assert response.status_code == 200
-    data = response.json()
-    assert "profile" in data
-    assert data["profile"]["username"] == "publicuser"
+    assert Status.of(결과) == Status.SUCCESS
+    assert 결과.json()["profile"]["username"] == "publicuser"
 
 
-def test_follow_요청을_보내면_following_true를_반환한다(client):
-    # given: 두 명의 유저를 등록 (팔로워, 팔로이)
-    follower_payload = {
-        "user": {"email": "follower@example.com", "password": "password123", "username": "follower"}
-    }
-    followee_payload = {
-        "user": {"email": "followee@example.com", "password": "password123", "username": "followee"}
-    }
-    follower_response = client.post("/users", json=follower_payload)
-    client.post("/users", json=followee_payload)
+def test_다른_유저를_팔로우할_수_있다(client):
+    # 팔로워 등록
+    팔로워 = AuthAPI(client)
+    팔로워.register(email="follower@example.com", username="follower")
 
-    follower_token = follower_response.json()["user"]["token"]
+    # 팔로이 등록
+    팔로이 = AuthAPI(client)
+    팔로이.register(email="followee@example.com", username="followee")
 
-    # when: follower가 followee를 follow
-    headers = {"Authorization": f"Token {follower_token}"}
-    response = client.post("/profiles/followee/follow", headers=headers)
+    # 팔로우
+    결과 = 팔로워.follow("followee")
 
-    # then: following이 true
-    assert response.status_code == 200
-    data = response.json()
-    assert data["profile"]["following"] is True
+    assert Status.of(결과) == Status.SUCCESS
+    assert 결과.json()["profile"]["following"] is True
 
 
-def test_unfollow_요청을_보내면_following_false를_반환한다(client):
-    # given: 두 명의 유저를 등록하고 follow 관계 생성
-    follower_payload = {
-        "user": {"email": "unfollower@example.com", "password": "password123", "username": "unfollower"}
-    }
-    followee_payload = {
-        "user": {"email": "unfollowee@example.com", "password": "password123", "username": "unfollowee"}
-    }
-    follower_response = client.post("/users", json=follower_payload)
-    client.post("/users", json=followee_payload)
+def test_팔로우를_취소할_수_있다(client):
+    # 팔로워 등록
+    팔로워 = AuthAPI(client)
+    팔로워.register(email="unfollower@example.com", username="unfollower")
 
-    follower_token = follower_response.json()["user"]["token"]
-    headers = {"Authorization": f"Token {follower_token}"}
+    # 팔로이 등록
+    팔로이 = AuthAPI(client)
+    팔로이.register(email="unfollowee@example.com", username="unfollowee")
 
-    # follow first
-    client.post("/profiles/unfollowee/follow", headers=headers)
+    # 팔로우 후 언팔로우
+    팔로워.follow("unfollowee")
+    결과 = 팔로워.unfollow("unfollowee")
 
-    # when: unfollow
-    response = client.delete("/profiles/unfollowee/follow", headers=headers)
-
-    # then: following이 false
-    assert response.status_code == 200
-    data = response.json()
-    assert data["profile"]["following"] is False
+    assert Status.of(결과) == Status.SUCCESS
+    assert 결과.json()["profile"]["following"] is False
 
 
-def test_자신을_follow_하려고_하면_422를_반환한다(client):
-    # given: 유저를 등록
-    user_payload = {
-        "user": {"email": "self@example.com", "password": "password123", "username": "selfuser"}
-    }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
+def test_자기_자신은_팔로우할_수_없다(auth_api):
+    auth_api.register(username="selfuser")
 
-    # when: 자기 자신을 follow 시도
-    headers = {"Authorization": f"Token {token}"}
-    response = client.post("/profiles/selfuser/follow", headers=headers)
+    결과 = auth_api.follow("selfuser")
 
-    # then: 422 반환
-    assert response.status_code == 422
-
+    assert Status.of(결과) == Status.VALIDATION_ERROR

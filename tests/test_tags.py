@@ -1,16 +1,10 @@
 """Tags Tests"""
+from tests.conftest import Status
 
 
-def test_GET_tags_요청_시_문자열_배열을_반환한다(client):
-    # given: 유저 등록 및 태그가 있는 article 생성
-    user_payload = {
-        "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}
-    }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
-    headers = {"Authorization": f"Token {token}"}
-
-    article_payload = {
+def test_태그_목록을_조회할_수_있다(로그인_유저1_api):
+    # 태그가 있는 글 작성
+    payload = {
         "article": {
             "title": "Test Article",
             "description": "Desc",
@@ -18,24 +12,17 @@ def test_GET_tags_요청_시_문자열_배열을_반환한다(client):
             "tagList": ["python", "fastapi"],
         }
     }
-    client.post("/articles", json=article_payload, headers=headers)
+    로그인_유저1_api.create(payload)
 
-    # when: tags 조회
-    response = client.get("/tags")
+    결과 = 로그인_유저1_api.list_tags()
 
-    # then: 200 반환 및 tags 배열 포함
-    assert response.status_code == 200
-    assert "tags" in response.json()
-    assert isinstance(response.json()["tags"], list)
-    assert "python" in response.json()["tags"]
-    assert "fastapi" in response.json()["tags"]
+    assert Status.of(결과) == Status.SUCCESS
+    assert "python" in 결과.json()["tags"]
+    assert "fastapi" in 결과.json()["tags"]
 
 
-def test_tag가_없으면_빈_배열을_반환한다(client):
-    # when: tags 조회 (아무 article도 없음)
-    response = client.get("/tags")
+def test_태그가_없으면_빈_목록을_반환한다(게스트_api):
+    결과 = 게스트_api.list_tags()
 
-    # then: 200 반환 및 빈 배열
-    assert response.status_code == 200
-    assert response.json()["tags"] == []
-
+    assert Status.of(결과) == Status.SUCCESS
+    assert 결과.json()["tags"] == []

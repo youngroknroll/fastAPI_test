@@ -1,147 +1,61 @@
 """Comments Tests"""
+from tests.conftest import ARTICLE_PAYLOAD, Status
 
 
-def test_article에_댓글_작성_시_comment_객체를_반환한다(client):
-    # given: 유저 등록 및 article 생성
-    user_payload = {
-        "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}
-    }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
-    headers = {"Authorization": f"Token {token}"}
+def test_게시글에_댓글을_작성할_수_있다(로그인_유저1_api):
+    작성된_글 = 로그인_유저1_api.create(ARTICLE_PAYLOAD).json()["article"]
+    slug = 작성된_글["slug"]
 
-    article_payload = {
-        "article": {"title": "Test Article", "description": "Desc", "body": "Body"}
-    }
-    create_response = client.post("/articles", json=article_payload, headers=headers)
-    slug = create_response.json()["article"]["slug"]
+    결과 = 로그인_유저1_api.create_comment(slug, "This is a comment")
 
-    # when: 댓글 작성
-    comment_payload = {"comment": {"body": "This is a comment"}}
-    response = client.post(f"/articles/{slug}/comments", json=comment_payload, headers=headers)
-
-    # then: 200 반환 및 comment 객체 포함
-    assert response.status_code == 200
-    assert "comment" in response.json()
-    assert response.json()["comment"]["body"] == "This is a comment"
-    assert "id" in response.json()["comment"]
-    assert "author" in response.json()["comment"]
+    assert Status.of(결과) == Status.SUCCESS
+    assert 결과.json()["comment"]["body"] == "This is a comment"
+    assert "id" in 결과.json()["comment"]
+    assert "author" in 결과.json()["comment"]
 
 
-def test_토큰이_없으면_comment_작성은_401을_반환한다(client):
-    # given: 유저 등록 및 article 생성
-    user_payload = {
-        "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}
-    }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
-    headers = {"Authorization": f"Token {token}"}
+def test_로그인하지_않으면_댓글을_작성할_수_없다(로그인_유저1_api, 게스트_api):
+    작성된_글 = 로그인_유저1_api.create(ARTICLE_PAYLOAD).json()["article"]
+    slug = 작성된_글["slug"]
 
-    article_payload = {
-        "article": {"title": "Test Article", "description": "Desc", "body": "Body"}
-    }
-    create_response = client.post("/articles", json=article_payload, headers=headers)
-    slug = create_response.json()["article"]["slug"]
+    결과 = 게스트_api.create_comment(slug, "This is a comment")
 
-    # when: 토큰 없이 댓글 작성
-    comment_payload = {"comment": {"body": "This is a comment"}}
-    response = client.post(f"/articles/{slug}/comments", json=comment_payload)
-
-    # then: 401 반환
-    assert response.status_code == 401
+    assert Status.of(결과) == Status.UNAUTHORIZED
 
 
-def test_댓글_조회_시_comments_배열을_반환한다(client):
-    # given: 유저 등록, article 생성, 댓글 작성
-    user_payload = {
-        "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}
-    }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
-    headers = {"Authorization": f"Token {token}"}
+def test_게시글의_댓글_목록을_조회할_수_있다(로그인_유저1_api):
+    작성된_글 = 로그인_유저1_api.create(ARTICLE_PAYLOAD).json()["article"]
+    slug = 작성된_글["slug"]
+    로그인_유저1_api.create_comment(slug, "First comment")
 
-    article_payload = {
-        "article": {"title": "Test Article", "description": "Desc", "body": "Body"}
-    }
-    create_response = client.post("/articles", json=article_payload, headers=headers)
-    slug = create_response.json()["article"]["slug"]
+    결과 = 로그인_유저1_api.list_comments(slug)
 
-    # 댓글 작성
-    comment_payload = {"comment": {"body": "First comment"}}
-    client.post(f"/articles/{slug}/comments", json=comment_payload, headers=headers)
-
-    # when: 댓글 조회
-    response = client.get(f"/articles/{slug}/comments")
-
-    # then: 200 반환 및 comments 배열 포함
-    assert response.status_code == 200
-    assert "comments" in response.json()
-    assert len(response.json()["comments"]) == 1
-    assert response.json()["comments"][0]["body"] == "First comment"
+    assert Status.of(결과) == Status.SUCCESS
+    assert len(결과.json()["comments"]) == 1
+    assert 결과.json()["comments"][0]["body"] == "First comment"
 
 
-def test_댓글_삭제_시_해당_댓글이_삭제된다(client):
-    # given: 유저 등록, article 생성, 댓글 작성
-    user_payload = {
-        "user": {"email": "test@example.com", "password": "password123", "username": "testuser"}
-    }
-    user_response = client.post("/users", json=user_payload)
-    token = user_response.json()["user"]["token"]
-    headers = {"Authorization": f"Token {token}"}
+def test_자신의_댓글을_삭제할_수_있다(로그인_유저1_api):
+    작성된_글 = 로그인_유저1_api.create(ARTICLE_PAYLOAD).json()["article"]
+    slug = 작성된_글["slug"]
+    댓글 = 로그인_유저1_api.create_comment(slug, "Comment to delete").json()["comment"]
+    comment_id = 댓글["id"]
 
-    article_payload = {
-        "article": {"title": "Test Article", "description": "Desc", "body": "Body"}
-    }
-    create_response = client.post("/articles", json=article_payload, headers=headers)
-    slug = create_response.json()["article"]["slug"]
+    삭제_결과 = 로그인_유저1_api.delete_comment(slug, comment_id)
 
-    # 댓글 작성
-    comment_payload = {"comment": {"body": "Comment to delete"}}
-    comment_response = client.post(f"/articles/{slug}/comments", json=comment_payload, headers=headers)
-    comment_id = comment_response.json()["comment"]["id"]
-
-    # when: 댓글 삭제
-    response = client.delete(f"/articles/{slug}/comments/{comment_id}", headers=headers)
-
-    # then: 204 반환
-    assert response.status_code == 204
+    assert Status.of(삭제_결과) == Status.DELETED
 
     # 댓글이 삭제되었는지 확인
-    get_response = client.get(f"/articles/{slug}/comments")
-    assert len(get_response.json()["comments"]) == 0
+    조회_결과 = 로그인_유저1_api.list_comments(slug)
+    assert len(조회_결과.json()["comments"]) == 0
 
 
-def test_다른_사용자의_댓글_삭제_시_403을_반환한다(client):
-    # given: 유저1이 article 생성 및 댓글 작성, 유저2가 삭제 시도
-    user1_payload = {
-        "user": {"email": "user1@example.com", "password": "password123", "username": "user1"}
-    }
-    user1_response = client.post("/users", json=user1_payload)
-    user1_token = user1_response.json()["user"]["token"]
-    headers1 = {"Authorization": f"Token {user1_token}"}
+def test_다른_사람의_댓글은_삭제할_수_없다(로그인_유저1_api, 로그인_유저2_api):
+    작성된_글 = 로그인_유저1_api.create(ARTICLE_PAYLOAD).json()["article"]
+    slug = 작성된_글["slug"]
+    댓글 = 로그인_유저1_api.create_comment(slug, "User1's comment").json()["comment"]
+    comment_id = 댓글["id"]
 
-    article_payload = {
-        "article": {"title": "User1 Article", "description": "Desc", "body": "Body"}
-    }
-    create_response = client.post("/articles", json=article_payload, headers=headers1)
-    slug = create_response.json()["article"]["slug"]
+    삭제_결과 = 로그인_유저2_api.delete_comment(slug, comment_id)
 
-    # 유저1이 댓글 작성
-    comment_payload = {"comment": {"body": "User1's comment"}}
-    comment_response = client.post(f"/articles/{slug}/comments", json=comment_payload, headers=headers1)
-    comment_id = comment_response.json()["comment"]["id"]
-
-    # 유저2 등록
-    user2_payload = {
-        "user": {"email": "user2@example.com", "password": "password123", "username": "user2"}
-    }
-    user2_response = client.post("/users", json=user2_payload)
-    user2_token = user2_response.json()["user"]["token"]
-    headers2 = {"Authorization": f"Token {user2_token}"}
-
-    # when: 유저2가 유저1의 댓글 삭제 시도
-    response = client.delete(f"/articles/{slug}/comments/{comment_id}", headers=headers2)
-
-    # then: 403 반환
-    assert response.status_code == 403
-
+    assert Status.of(삭제_결과) == Status.FORBIDDEN

@@ -56,6 +56,19 @@ class AuthAPI:
         payload = {"user": fields}
         return self._client.put("/user", json=payload, headers=self._get_headers())
 
+    # Profile
+    def get_profile(self, username):
+        """프로필 조회"""
+        return self._client.get(f"/profiles/{username}", headers=self._get_headers())
+
+    def follow(self, username):
+        """팔로우"""
+        return self._client.post(f"/profiles/{username}/follow", headers=self._get_headers())
+
+    def unfollow(self, username):
+        """언팔로우"""
+        return self._client.delete(f"/profiles/{username}/follow", headers=self._get_headers())
+
 
 @pytest.fixture
 def auth_api(client):

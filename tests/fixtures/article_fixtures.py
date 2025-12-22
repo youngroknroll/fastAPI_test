@@ -28,11 +28,27 @@ class ArticleAPI:
     def list(self, **params):
         return self._client.get("/articles", params=params, headers=self._get_headers())
 
+    # Favorite
     def favorite(self, slug):
         return self._client.post(f"/articles/{slug}/favorite", headers=self._get_headers())
 
     def unfavorite(self, slug):
         return self._client.delete(f"/articles/{slug}/favorite", headers=self._get_headers())
+
+    # Comment
+    def create_comment(self, slug, body):
+        payload = {"comment": {"body": body}}
+        return self._client.post(f"/articles/{slug}/comments", json=payload, headers=self._get_headers())
+
+    def list_comments(self, slug):
+        return self._client.get(f"/articles/{slug}/comments", headers=self._get_headers())
+
+    def delete_comment(self, slug, comment_id):
+        return self._client.delete(f"/articles/{slug}/comments/{comment_id}", headers=self._get_headers())
+
+    # Tags
+    def list_tags(self):
+        return self._client.get("/tags")
 
 
 @pytest.fixture
