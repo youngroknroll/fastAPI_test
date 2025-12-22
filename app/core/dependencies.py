@@ -8,8 +8,17 @@ from sqlmodel import Session
 from app.core.database import get_session
 from app.core.security import verify_token
 from app.models.user_model import User
-from app.repositories.interfaces import UserRepositoryInterface
+from app.repositories.interfaces import (
+    ArticleRepositoryInterface,
+    FavoriteRepositoryInterface,
+    TagRepositoryInterface,
+    UserRepositoryInterface,
+)
+from app.repositories.article_repository import ArticleRepository
+from app.repositories.favorite_repository import FavoriteRepository
+from app.repositories.tag_repository import TagRepository
 from app.repositories.user_repository import UserRepository
+from app.services.article_service import ArticleService
 from app.services.user_service import UserService
 
 
@@ -18,9 +27,30 @@ def get_user_repository(session: Session = Depends(get_session)) -> UserReposito
     return UserRepository(session)
 
 
+def get_article_repository(session: Session = Depends(get_session)) -> ArticleRepositoryInterface:
+    return ArticleRepository(session)
+
+
+def get_tag_repository(session: Session = Depends(get_session)) -> TagRepositoryInterface:
+    return TagRepository(session)
+
+
+def get_favorite_repository(session: Session = Depends(get_session)) -> FavoriteRepositoryInterface:
+    return FavoriteRepository(session)
+
+
 # Service
 def get_user_service(user_repo: UserRepositoryInterface = Depends(get_user_repository)) -> UserService:
     return UserService(user_repo)
+
+
+def get_article_service(
+    article_repo: ArticleRepositoryInterface = Depends(get_article_repository),
+    user_repo: UserRepositoryInterface = Depends(get_user_repository),
+    tag_repo: TagRepositoryInterface = Depends(get_tag_repository),
+    favorite_repo: FavoriteRepositoryInterface = Depends(get_favorite_repository),
+) -> ArticleService:
+    return ArticleService(article_repo, user_repo, tag_repo, favorite_repo)
 
 
 # Auth

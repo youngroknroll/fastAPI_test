@@ -11,7 +11,6 @@ from app.services.user_service import UserService
 router = APIRouter(tags=["auth"])
 
 
-# Request Wrappers
 class UserRegisterRequest(BaseModel):
     user: UserRegister
 
@@ -24,19 +23,18 @@ class UserUpdateRequest(BaseModel):
     user: UserUpdate
 
 
-# Endpoints
 @router.post("/users", status_code=201)
-def 회원가입(request: UserRegisterRequest, service: UserService = Depends(get_user_service)):
+def register(request: UserRegisterRequest, service: UserService = Depends(get_user_service)):
     return service.register_user(request.user)
 
 
 @router.post("/users/login", status_code=200)
-def 로그인(request: UserLoginRequest, service: UserService = Depends(get_user_service)):
+def login(request: UserLoginRequest, service: UserService = Depends(get_user_service)):
     return service.login_user(request.user.email, request.user.password)
 
 
 @router.get("/user", status_code=200)
-def 내_정보_조회(
+def get_current_user_info(
     current_user: User = Depends(get_current_user),
     service: UserService = Depends(get_user_service),
 ):
@@ -44,7 +42,7 @@ def 내_정보_조회(
 
 
 @router.put("/user", status_code=200)
-def 내_정보_수정(
+def update_user(
     request: UserUpdateRequest,
     current_user: User = Depends(get_current_user),
     service: UserService = Depends(get_user_service),

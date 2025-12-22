@@ -1,4 +1,4 @@
-"""Article Repository"""
+"""Article Repository - 게시글 데이터 접근 계층"""
 
 from typing import Optional
 
@@ -8,56 +8,41 @@ from app.models.article_model import Article
 
 
 class ArticleRepository:
-    """Article data access layer"""
+    """게시글 데이터 저장소"""
 
     def __init__(self, session: Session):
-        self.session = session
-
-    def create(
-        self, slug: str, title: str, description: str, body: str, author_id: int
-    ) -> Article:
-        """Create a new article"""
-        article = Article(
-            slug=slug,
-            title=title,
-            description=description,
-            body=body,
-            author_id=author_id,
-        )
-        self.session.add(article)
-        self.session.commit()
-        self.session.refresh(article)
-        return article
+        self._session = session
 
     def get_by_slug(self, slug: str) -> Optional[Article]:
-        """Get article by slug"""
         statement = select(Article).where(Article.slug == slug)
-        return self.session.exec(statement).first()
+        return self._session.exec(statement).first()
 
     def get_all(self, author_id: int = None, article_ids: list[int] = None) -> list[Article]:
-        """Get all articles with optional filters"""
         statement = select(Article)
-
         if author_id is not None:
             statement = statement.where(Article.author_id == author_id)
-
         if article_ids is not None:
             statement = statement.where(Article.id.in_(article_ids))
+        return list(self._session.exec(statement).all())
 
-        return list(self.session.exec(statement).all())
+    def create(self, slug: str, title: str, description: str, body: str, author_id: int) -> Article:
+        article = Article(
+            slug=slug, title=title, description=description, body=body, author_id=author_id
+        )
+        self._session.add(article)
+        self._session.commit()
+        self._session.refresh(article)
+        return article
 
     def update(self, article: Article, **kwargs) -> Article:
-        """Update an article"""
         for key, value in kwargs.items():
             if value is not None:
                 setattr(article, key, value)
-        self.session.add(article)
-        self.session.commit()
-        self.session.refresh(article)
+        self._session.add(article)
+        self._session.commit()
+        self._session.refresh(article)
         return article
 
     def delete(self, article: Article) -> None:
-        """Delete an article"""
-        self.session.delete(article)
-        self.session.commit()
-
+        self._session.delete(article)
+        self._session.commit()
