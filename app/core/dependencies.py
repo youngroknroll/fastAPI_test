@@ -10,15 +10,21 @@ from app.core.security import verify_token
 from app.models.user_model import User
 from app.repositories.interfaces import (
     ArticleRepositoryInterface,
+    CommentRepositoryInterface,
     FavoriteRepositoryInterface,
+    FollowRepositoryInterface,
     TagRepositoryInterface,
     UserRepositoryInterface,
 )
 from app.repositories.article_repository import ArticleRepository
+from app.repositories.comment_repository import CommentRepository
 from app.repositories.favorite_repository import FavoriteRepository
+from app.repositories.follow_repository import FollowRepository
 from app.repositories.tag_repository import TagRepository
 from app.repositories.user_repository import UserRepository
 from app.services.article_service import ArticleService
+from app.services.comment_service import CommentService
+from app.services.profile_service import ProfileService
 from app.services.user_service import UserService
 
 
@@ -39,6 +45,14 @@ def get_favorite_repository(session: Session = Depends(get_session)) -> Favorite
     return FavoriteRepository(session)
 
 
+def get_comment_repository(session: Session = Depends(get_session)) -> CommentRepositoryInterface:
+    return CommentRepository(session)
+
+
+def get_follow_repository(session: Session = Depends(get_session)) -> FollowRepositoryInterface:
+    return FollowRepository(session)
+
+
 # Service
 def get_user_service(user_repo: UserRepositoryInterface = Depends(get_user_repository)) -> UserService:
     return UserService(user_repo)
@@ -51,6 +65,21 @@ def get_article_service(
     favorite_repo: FavoriteRepositoryInterface = Depends(get_favorite_repository),
 ) -> ArticleService:
     return ArticleService(article_repo, user_repo, tag_repo, favorite_repo)
+
+
+def get_comment_service(
+    comment_repo: CommentRepositoryInterface = Depends(get_comment_repository),
+    article_repo: ArticleRepositoryInterface = Depends(get_article_repository),
+    user_repo: UserRepositoryInterface = Depends(get_user_repository),
+) -> CommentService:
+    return CommentService(comment_repo, article_repo, user_repo)
+
+
+def get_profile_service(
+    user_repo: UserRepositoryInterface = Depends(get_user_repository),
+    follow_repo: FollowRepositoryInterface = Depends(get_follow_repository),
+) -> ProfileService:
+    return ProfileService(user_repo, follow_repo)
 
 
 # Auth
