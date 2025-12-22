@@ -1,49 +1,55 @@
 """Articles: Create Tests"""
 
-def test_로그인한_유저는_게시글을_작성할_수_있다(article_api, user1_header, article_payload):
-    response = article_api.create(article_payload, headers=user1_header)
+ARTICLE_PAYLOAD = {
+    "article": {"title": "Test Article", "description": "Test Desc", "body": "Test Body"}
+}
+
+
+def test_로그인한_유저는_게시글을_작성할_수_있다(로그인_유저1_api):
+    response = 로그인_유저1_api.create(ARTICLE_PAYLOAD)
 
     assert response.status_code == 201
     assert "article" in response.json()
 
 
-def test_유저가_게시글을_저장할_수_있다(article_api, user1_header, article_payload):
+def test_유저가_게시글을_저장할_수_있다(로그인_유저1_api):
     payload = {
         "article": {
-            **article_payload["article"],
-            "title": "My Test Title",
+            **ARTICLE_PAYLOAD["article"],  # 원본 복사
+            "title": "My Test Title",       # title만 덮어쓰기
         }
     }
-    response = article_api.create(payload, headers=user1_header)
-
+    response = 로그인_유저1_api.create(payload)
+    article = response.json()["article"]
+    
     assert response.status_code == 201
-    assert response.json()["article"]["title"] == "My Test Title"
+    assert article["title"] == "My Test Title"
 
 
-def test_유저가_게시글을_작성하면_slug가_생성된다(article_api, user1_header, article_payload):
+def test_유저가_게시글을_작성하면_slug가_생성된다(로그인_유저1_api):
     payload = {
         "article": {
-            **article_payload["article"],
-            "title": "My Test Title",
+            **ARTICLE_PAYLOAD["article"],  # 원본 복사
+            "title": "My Test Title",       # title만 덮어쓰기
         }
     }
-    response = article_api.create(payload, headers=user1_header)
-
+    response = 로그인_유저1_api.create(payload)
+    article = response.json()["article"]
+    
     assert response.status_code == 201
-    assert "slug" in response.json()["article"]
-    assert response.json()["article"]["slug"] == "my-test-title"
+    assert article["slug"] == "my-test-title"
 
 
-def test_유저가_게시글을_작성하면_작성자_정보가_저장된다(article_api, user1_header, article_payload):
-    response = article_api.create(article_payload, headers=user1_header)
+def test_유저가_게시글을_작성하면_작성자_정보가_저장된다(로그인_유저1_api):
+    response = 로그인_유저1_api.create(ARTICLE_PAYLOAD)
 
     assert response.status_code == 201
     assert "author" in response.json()["article"]
     assert response.json()["article"]["author"]["username"] == "user1"
 
 
-def test_로그인하지_않으면_게시글을_작성할_수_없다(article_api, article_payload):
-    response = article_api.create(article_payload)
+def test_로그인하지_않으면_게시글을_작성할_수_없다(게스트_api):
+    response = 게스트_api.create(ARTICLE_PAYLOAD)
 
     assert response.status_code == 401
 

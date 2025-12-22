@@ -3,8 +3,8 @@
 import pytest
 
 
-@pytest.fixture
-def user1_token(client):
+
+def _user1_token(client):
     """user1 등록 및 토큰 반환"""
     user1_payload = {
         "user": {"email": "user1@example.com", "password": "password123", "username": "user1"}
@@ -14,8 +14,8 @@ def user1_token(client):
     return token
 
 
-@pytest.fixture
-def user2_token(client):
+
+def _user2_token(client):
     """user2 등록 및 토큰 반환"""
     user2_payload = {
         "user": {"email": "user2@example.com", "password": "password123", "username": "user2"}
@@ -25,16 +25,21 @@ def user2_token(client):
     return token
 
 
-@pytest.fixture
-def user1_header(user1_token):
-    """user1 인증 헤더"""
-    headers = {"Authorization": f"Token {user1_token}"}
-    return headers
+# 인증된 API fixtures
 
+from tests.fixtures.article_fixtures import ArticleAPI
 
 @pytest.fixture
-def user2_header(user2_token):
-    """user2 인증 헤더"""
-    headers = {"Authorization": f"Token {user2_token}"}
-    return headers
+def 로그인_유저1_api(client):
+    """로그인한 유저1의 ArticleAPI"""
+    return ArticleAPI(client, token=_user1_token(client))
 
+@pytest.fixture
+def 로그인_유저2_api(client):
+    """로그인한 유저2의 ArticleAPI"""
+    return ArticleAPI(client, token=_user2_token(client))
+
+@pytest.fixture
+def 게스트_api(client):
+    """비로그인 유저의 API"""
+    return ArticleAPI(client)
