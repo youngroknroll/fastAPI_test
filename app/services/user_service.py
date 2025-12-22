@@ -1,111 +1,50 @@
-"""User Service - Business logic for user operations"""
+"""User Service - 유저 비즈니스 로직"""
 
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlmodel import Session
 
 from app.core.security import create_access_token
 from app.models.user_model import User
-from app.repositories.user_repository import UserRepository
+from app.repositories.interfaces import UserRepositoryInterface
 from app.schemas.user_schema import UserRegister, UserUpdate
 
 
 class UserService:
-    """User business logic"""
+    """유저 관련 비즈니스 로직 처리"""
 
-    def __init__(self, session: Session):
-        self.session = session
-        self.repo = UserRepository(session)
+    def __init__(self, user_repo: UserRepositoryInterface):
+        self._repo = user_repo
 
     def register_user(self, user_data: UserRegister) -> dict:
-        """
-        Register a new user
-
-        Returns:
-            dict: User data with token
-
-        Raises:
-            HTTPException: 422 if email already exists
-        """
-        # Check if email already exists
-        existing_user = self.repo.get_by_email(user_data.email)
-        if existing_user:
+        """회원가입"""
+        if self._repo.get_by_email(user_data.email):
             raise HTTPException(status_code=422, detail="Email already registered")
 
-        # Create user
-        user = self.repo.create(
+        user = self._repo.create(
             email=user_data.email,
             username=user_data.username,
             password=user_data.password,
         )
-
-        # Generate JWT token
-        token = create_access_token(user_id=user.id, username=user.username)
-
-        return {
-            "user": {
-                "email": user.email,
-                "username": user.username,
-                "token": token,
-            }
-        }
+        return self._build_user_response(user)
 
     def login_user(self, email: str, password: str) -> dict:
-        """
-        Login user
-
-        Returns:
-            dict: User data with token
-
-        Raises:
-            HTTPException: 422 if credentials are invalid
-        """
-        # Get user by email
-        user = self.repo.get_by_email(email)
+        """로그인"""
+        user = self._repo.get_by_email(email)
         if user is None:
             raise HTTPException(status_code=422, detail="Email not found")
 
-        # Check password
         if user.hashed_password != password:
             raise HTTPException(status_code=422, detail="Invalid password")
 
-        # Generate JWT token
-        token = create_access_token(user_id=user.id, username=user.username)
-
-        return {
-            "user": {
-                "email": user.email,
-                "username": user.username,
-                "token": token,
-            }
-        }
+        return self._build_user_response(user)
 
     def get_user_profile(self, user: User) -> dict:
-        """
-        Get user profile with token
-
-        Returns:
-            dict: User data with token
-        """
-        token = create_access_token(user_id=user.id, username=user.username)
-
-        return {
-            "user": {
-                "email": user.email,
-                "username": user.username,
-                "token": token,
-            }
-        }
+        """내 정보 조회"""
+        return self._build_user_response(user)
 
     def update_user(self, user: User, update_data: UserUpdate) -> dict:
-        """
-        Update user information
-
-        Returns:
-            dict: Updated user data with token
-        """
-        # Update user fields
+        """내 정보 수정"""
         if update_data.email is not None:
             user.email = update_data.email
         if update_data.username is not None:
@@ -117,14 +56,16 @@ class UserService:
         if update_data.image is not None:
             user.image = update_data.image
 
-        # Save changes
-        self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
+        user = self._repo.update(user)
+        return self._build_user_response(user)
 
-        # Generate new token
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        """ID로 유저 조회"""
+        return self._repo.get_by_id(user_id)
+
+    def _build_user_response(self, user: User) -> dict:
+        """유저 응답 형식 생성"""
         token = create_access_token(user_id=user.id, username=user.username)
-
         return {
             "user": {
                 "email": user.email,
@@ -132,8 +73,3 @@ class UserService:
                 "token": token,
             }
         }
-
-    def get_by_id(self, user_id: int) -> Optional[User]:
-        """Get user by ID"""
-        return self.repo.get_by_id(user_id)
-

@@ -1,4 +1,4 @@
-"""User Repository"""
+"""User Repository - 유저 데이터 접근 계층"""
 
 from typing import Optional
 
@@ -8,36 +8,32 @@ from app.models.user_model import User
 
 
 class UserRepository:
-    """User data access layer"""
+    """유저 데이터 저장소"""
 
     def __init__(self, session: Session):
-        self.session = session
+        self._session = session
 
     def get_by_id(self, user_id: int) -> Optional[User]:
-        """Get user by ID"""
         statement = select(User).where(User.id == user_id)
-        return self.session.exec(statement).first()
+        return self._session.exec(statement).first()
 
     def get_by_email(self, email: str) -> Optional[User]:
-        """Get user by email"""
         statement = select(User).where(User.email == email)
-        return self.session.exec(statement).first()
+        return self._session.exec(statement).first()
 
     def get_by_username(self, username: str) -> Optional[User]:
-        """Get user by username"""
         statement = select(User).where(User.username == username)
-        return self.session.exec(statement).first()
+        return self._session.exec(statement).first()
 
     def create(self, email: str, username: str, password: str) -> User:
-        """Create a new user"""
         user = User(email=email, username=username, hashed_password=password)
-        self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
+        self._session.add(user)
+        self._session.commit()
+        self._session.refresh(user)
         return user
 
-    def get_first_user(self) -> Optional[User]:
-        """Get first user (temporary for testing)"""
-        statement = select(User)
-        return self.session.exec(statement).first()
-
+    def update(self, user: User) -> User:
+        self._session.add(user)
+        self._session.commit()
+        self._session.refresh(user)
+        return user
