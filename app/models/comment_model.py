@@ -15,6 +15,6 @@ class Comment(SQLModel, table=True):
     body: str
     author_id: int = Field(foreign_key="users.id")
     article_id: int = Field(foreign_key="articles.id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
