@@ -1,4 +1,3 @@
-"""Auth: Register Tests"""
 from tests.conftest import Status
 from tests.fixtures.auth_fixtures import DEFAULT_EMAIL, DEFAULT_USERNAME
 

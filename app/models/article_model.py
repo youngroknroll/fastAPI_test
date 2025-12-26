@@ -1,5 +1,3 @@
-"""Article Model"""
-
 from datetime import datetime
 from typing import Optional
 
@@ -7,7 +5,6 @@ from sqlmodel import Field, SQLModel
 
 
 class Article(SQLModel, table=True):
-    """Article database model"""
 
     __tablename__ = "articles"
 

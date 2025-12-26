@@ -1,5 +1,3 @@
-"""Database configuration"""
-
 from sqlmodel import Session, SQLModel, create_engine
 
 # Import models to ensure they are registered

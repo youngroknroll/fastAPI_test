@@ -1,5 +1,3 @@
-"""User fixtures for tests"""
-
 import pytest
 
 from tests.fixtures.article_fixtures import ArticleAPI

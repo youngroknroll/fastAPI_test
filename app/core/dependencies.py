@@ -1,5 +1,3 @@
-"""FastAPI Dependencies - 의존성 주입 설정"""
-
 from typing import Optional
 
 from fastapi import Depends, Header, HTTPException

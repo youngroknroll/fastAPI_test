@@ -1,12 +1,9 @@
-"""Follow Repository - 팔로우 데이터 접근 계층"""
-
 from sqlmodel import Session, select
 
 from app.models.follow_model import Follow
 
 
 class FollowRepository:
-    """팔로우 관계 데이터 저장소"""
 
     def __init__(self, session: Session):
         self._session = session

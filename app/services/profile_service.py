@@ -1,5 +1,3 @@
-"""Profile Service - 프로필 비즈니스 로직"""
-
 from typing import Optional
 
 from fastapi import HTTPException
@@ -9,7 +7,6 @@ from app.repositories.interfaces import FollowRepositoryInterface, UserRepositor
 
 
 class ProfileService:
-    """프로필 관련 비즈니스 로직 처리"""
 
     def __init__(
         self,

@@ -1,2 +1,0 @@
-"""FastAPI RealWorld Application"""
-

@@ -1,12 +1,9 @@
-"""Follow Model"""
-
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
 
 class Follow(SQLModel, table=True):
-    """Follow relationship model"""
 
     __tablename__ = "follows"
 

@@ -1,12 +1,9 @@
-"""Tag Repository - 태그 데이터 접근 계층"""
-
 from sqlmodel import Session, select
 
 from app.models.tag_model import ArticleTag, Tag
 
 
 class TagRepository:
-    """태그 데이터 저장소"""
 
     def __init__(self, session: Session):
         self._session = session

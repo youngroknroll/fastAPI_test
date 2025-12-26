@@ -1,5 +1,3 @@
-"""Comment Service - 댓글 비즈니스 로직"""
-
 from fastapi import HTTPException
 
 from app.models.comment_model import Comment
@@ -12,7 +10,6 @@ from app.repositories.interfaces import (
 
 
 class CommentService:
-    """댓글 관련 비즈니스 로직 처리"""
 
     def __init__(
         self,

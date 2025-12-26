@@ -7,7 +7,6 @@ from app.models.user_model import User
 
 
 class UserRepositoryInterface(Protocol):
-    """유저 저장소 인터페이스"""
 
     def get_by_id(self, user_id: int) -> Optional[User]: ...
     def get_by_email(self, email: str) -> Optional[User]: ...
@@ -17,7 +16,6 @@ class UserRepositoryInterface(Protocol):
 
 
 class ArticleRepositoryInterface(Protocol):
-    """게시글 저장소 인터페이스"""
 
     def get_by_slug(self, slug: str) -> Optional[Article]: ...
     def get_all(self, author_id: int = None, article_ids: list[int] = None) -> list[Article]: ...
@@ -27,7 +25,6 @@ class ArticleRepositoryInterface(Protocol):
 
 
 class TagRepositoryInterface(Protocol):
-    """태그 저장소 인터페이스"""
 
     def add_tags_to_article(self, article_id: int, tag_names: list[str]) -> None: ...
     def get_tags_for_article(self, article_id: int) -> list[str]: ...
@@ -36,7 +33,6 @@ class TagRepositoryInterface(Protocol):
 
 
 class FavoriteRepositoryInterface(Protocol):
-    """좋아요 저장소 인터페이스"""
 
     def create(self, user_id: int, article_id: int) -> None: ...
     def delete(self, user_id: int, article_id: int) -> None: ...
@@ -46,7 +42,6 @@ class FavoriteRepositoryInterface(Protocol):
 
 
 class CommentRepositoryInterface(Protocol):
-    """댓글 저장소 인터페이스"""
 
     def get_by_id(self, comment_id: int): ...
     def get_by_article_id(self, article_id: int) -> list: ...
@@ -55,7 +50,6 @@ class CommentRepositoryInterface(Protocol):
 
 
 class FollowRepositoryInterface(Protocol):
-    """팔로우 저장소 인터페이스"""
 
     def create(self, follower_id: int, followee_id: int): ...
     def delete(self, follower_id: int, followee_id: int) -> bool: ...

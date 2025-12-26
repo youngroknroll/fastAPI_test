@@ -1,5 +1,3 @@
-"""Article fixtures for tests"""
-
 import pytest
 
 class ArticleAPI:

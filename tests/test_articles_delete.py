@@ -1,4 +1,3 @@
-"""Articles: Delete Tests"""
 from tests.conftest import ARTICLE_PAYLOAD, Status
 
 

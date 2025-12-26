@@ -1,5 +1,3 @@
-"""User Repository - 유저 데이터 접근 계층"""
-
 from typing import Optional
 
 from sqlmodel import Session, select

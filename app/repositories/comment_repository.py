@@ -1,5 +1,3 @@
-"""Comment Repository - 댓글 데이터 접근 계층"""
-
 from typing import Optional
 
 from sqlmodel import Session, select
@@ -8,7 +6,6 @@ from app.models.comment_model import Comment
 
 
 class CommentRepository:
-    """댓글 데이터 저장소"""
 
     def __init__(self, session: Session):
         self._session = session

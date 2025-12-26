@@ -1,5 +1,3 @@
-"""Comment Model"""
-
 from datetime import datetime
 from typing import Optional
 
@@ -7,7 +5,6 @@ from sqlmodel import Field, SQLModel
 
 
 class Comment(SQLModel, table=True):
-    """Comment database model"""
 
     __tablename__ = "comments"
 

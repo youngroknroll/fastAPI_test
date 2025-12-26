@@ -1,12 +1,9 @@
-"""Favorite Repository - 좋아요 데이터 접근 계층"""
-
 from sqlmodel import Session, select
 
 from app.models.favorite_model import Favorite
 
 
 class FavoriteRepository:
-    """좋아요 데이터 저장소"""
 
     def __init__(self, session: Session):
         self._session = session

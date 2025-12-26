@@ -1,4 +1,3 @@
-"""Auth: Update User Tests"""
 from tests.conftest import Status
 
 

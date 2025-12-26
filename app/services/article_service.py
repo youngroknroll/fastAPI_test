@@ -1,5 +1,3 @@
-"""Article Service - 게시글 비즈니스 로직"""
-
 import re
 
 from fastapi import HTTPException
@@ -23,7 +21,6 @@ def _slugify(title: str) -> str:
 
 
 class ArticleService:
-    """게시글 관련 비즈니스 로직 처리"""
 
     def __init__(
         self,

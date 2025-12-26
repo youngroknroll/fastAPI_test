@@ -1,5 +1,3 @@
-"""Auth fixtures for tests"""
-
 import pytest
 
 # 기본 유저 정보

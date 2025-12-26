@@ -1,12 +1,9 @@
-"""User Model"""
-
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
 
 class User(SQLModel, table=True):
-    """User database model"""
 
     __tablename__ = "users"
 

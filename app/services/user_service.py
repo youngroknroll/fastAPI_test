@@ -1,5 +1,3 @@
-"""User Service - 유저 비즈니스 로직"""
-
 from typing import Optional
 
 from fastapi import HTTPException
@@ -11,7 +9,6 @@ from app.schemas.user_schema import UserRegister, UserUpdate
 
 
 class UserService:
-    """유저 관련 비즈니스 로직 처리"""
 
     def __init__(self, user_repo: UserRepositoryInterface):
         self._repo = user_repo

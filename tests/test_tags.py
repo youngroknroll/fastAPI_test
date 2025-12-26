@@ -1,4 +1,3 @@
-"""Tags Tests"""
 from tests.conftest import Status
 
 
