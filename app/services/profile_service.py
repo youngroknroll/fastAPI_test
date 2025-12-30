@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import HTTPException
 
 from app.models.user_model import User
@@ -16,7 +14,7 @@ class ProfileService:
         self._user_repo = user_repo
         self._follow_repo = follow_repo
 
-    def get_profile(self, username: str, current_user_id: Optional[int] = None) -> dict:
+    def get_profile(self, username: str, current_user_id: int | None = None) -> dict:
         """프로필 조회"""
         user = self._get_user_or_404(username)
         following = self._check_following(current_user_id, user.id)
@@ -46,7 +44,7 @@ class ProfileService:
             raise HTTPException(status_code=404, detail="Profile not found")
         return user
 
-    def _check_following(self, current_user_id: Optional[int], target_user_id: int) -> bool:
+    def _check_following(self, current_user_id: int | None, target_user_id: int) -> bool:
         if current_user_id is None:
             return False
         return self._follow_repo.is_following(current_user_id, target_user_id)

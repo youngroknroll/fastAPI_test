@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import HTTPException
 
 from app.core.security import create_access_token, hash_password, verify_password
@@ -61,7 +59,7 @@ class UserService:
         user = self._repo.update(user)
         return self._build_user_response(user)
 
-    def get_by_id(self, user_id: int) -> Optional[User]:
+    def get_by_id(self, user_id: int) -> User | None:
         """ID로 유저 조회"""
         return self._repo.get_by_id(user_id)
 

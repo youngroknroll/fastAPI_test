@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlmodel import Session, select
 
 from app.models.article_model import Article
@@ -10,11 +8,13 @@ class ArticleRepository:
     def __init__(self, session: Session):
         self._session = session
 
-    def get_by_slug(self, slug: str) -> Optional[Article]:
+    def get_by_slug(self, slug: str) -> Article | None:
         statement = select(Article).where(Article.slug == slug)
         return self._session.exec(statement).first()
 
-    def get_all(self, author_id: int = None, article_ids: list[int] = None) -> list[Article]:
+    def get_all(
+        self, author_id: int | None = None, article_ids: list[int] | None = None
+    ) -> list[Article]:
         statement = select(Article)
         if author_id is not None:
             statement = statement.where(Article.author_id == author_id)

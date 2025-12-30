@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -18,11 +16,11 @@ class UserLogin(BaseModel):
 
 class UserUpdate(BaseModel):
 
-    email: Optional[str] = None
-    username: Optional[str] = None
-    password: Optional[str] = None
-    bio: Optional[str] = None
-    image: Optional[str] = None
+    email: str | None = None
+    username: str | None = None
+    password: str | None = None
+    bio: str | None = None
+    image: str | None = None
 
 
 class UserResponse(BaseModel):

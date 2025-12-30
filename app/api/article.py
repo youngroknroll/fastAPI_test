@@ -21,9 +21,9 @@ class ArticleUpdateRequest(BaseModel):
 
 @router.get("/articles", status_code=200)
 def get_articles(
-    author: str = None,
-    tag: str = None,
-    favorited: str = None,
+    author: str | None = None,
+    tag: str | None = None,
+    favorited: str | None = None,
     service: ArticleService = Depends(get_article_service),
 ):
     return service.get_articles(author=author, tag=tag, favorited=favorited)

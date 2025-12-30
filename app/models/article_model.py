@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
@@ -8,7 +7,7 @@ class Article(SQLModel, table=True):
 
     __tablename__ = "articles"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     slug: str = Field(unique=True, index=True)
     title: str
     description: str

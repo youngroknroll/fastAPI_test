@@ -35,7 +35,12 @@ class ArticleService:
         self._favorite_repo = favorite_repo
 
     def create_article(
-        self, title: str, description: str, body: str, author: User, tag_list: list[str] = None
+        self,
+        title: str,
+        description: str,
+        body: str,
+        author: User,
+        tag_list: list[str] | None = None,
     ) -> dict:
         """게시글 작성"""
         slug = _slugify(title)
@@ -55,7 +60,9 @@ class ArticleService:
         tag_list = self._tag_repo.get_tags_for_article(article.id)
         return self._build_article_response(article, author, tag_list)
 
-    def get_articles(self, author: str = None, tag: str = None, favorited: str = None) -> dict:
+    def get_articles(
+        self, author: str | None = None, tag: str | None = None, favorited: str | None = None
+    ) -> dict:
         """게시글 목록 조회 (필터링 가능)"""
         author_id = self._get_author_id(author)
         if author and author_id is None:
@@ -66,6 +73,7 @@ class ArticleService:
             return {"articles": [], "articlesCount": 0}
 
         articles = self._article_repo.get_all(author_id=author_id, article_ids=article_ids)
+        # article -> author_ids_set 
         articles_data = [
             self._build_article_response(
                 article,
@@ -77,7 +85,12 @@ class ArticleService:
         return {"articles": articles_data, "articlesCount": len(articles_data)}
 
     def update_article(
-        self, slug: str, user: User, title: str = None, description: str = None, body: str = None
+        self,
+        slug: str,
+        user: User,
+        title: str | None = None,
+        description: str | None = None,
+        body: str | None = None,
     ) -> dict:
         """게시글 수정"""
         article = self._get_article_or_404(slug)
@@ -147,9 +160,12 @@ class ArticleService:
             article_ids = list(set(article_ids) & set(favorited_ids)) if article_ids else favorited_ids
 
         return article_ids
-
     def _build_article_response(
-        self, article: Article, author: User, tag_list: list[str] = None, current_user: User = None
+        self,
+        article: Article,
+        author: User,
+        tag_list: list[str] | None = None,
+        current_user: User | None = None,
     ) -> dict:
         favorites_count = self._favorite_repo.count_by_article(article.id)
         favorited = (
@@ -175,3 +191,4 @@ class ArticleService:
                 },
             }
         }
+

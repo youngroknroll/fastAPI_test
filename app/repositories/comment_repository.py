@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlmodel import Session, select
 
 from app.models.comment_model import Comment
@@ -10,7 +8,7 @@ class CommentRepository:
     def __init__(self, session: Session):
         self._session = session
 
-    def get_by_id(self, comment_id: int) -> Optional[Comment]:
+    def get_by_id(self, comment_id: int) -> Comment | None:
         statement = select(Comment).where(Comment.id == comment_id)
         return self._session.exec(statement).first()
 
