@@ -21,4 +21,3 @@ def get_session():
     """Get database session"""
     with Session(engine) as session:
         yield session
-

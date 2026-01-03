@@ -5,7 +5,6 @@ from app.repositories.interfaces import FollowRepositoryInterface, UserRepositor
 
 
 class ProfileService:
-
     def __init__(
         self,
         user_repo: UserRepositoryInterface,

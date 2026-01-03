@@ -4,7 +4,6 @@ from sqlmodel import Field, SQLModel
 
 
 class Article(SQLModel, table=True):
-
     __tablename__ = "articles"
 
     id: int | None = Field(default=None, primary_key=True)
@@ -15,4 +14,3 @@ class Article(SQLModel, table=True):
     author_id: int = Field(foreign_key="users.id")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-

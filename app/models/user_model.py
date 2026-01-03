@@ -2,7 +2,6 @@ from sqlmodel import Field, SQLModel
 
 
 class User(SQLModel, table=True):
-
     __tablename__ = "users"
 
     id: int | None = Field(default=None, primary_key=True)
@@ -11,4 +10,3 @@ class User(SQLModel, table=True):
     hashed_password: str
     bio: str | None = None
     image: str | None = None
-

@@ -10,7 +10,6 @@ from app.repositories.interfaces import (
 
 
 class CommentService:
-
     def __init__(
         self,
         comment_repo: CommentRepositoryInterface,
@@ -33,7 +32,9 @@ class CommentService:
         comments = self._comment_repo.get_by_article_id(article.id)
 
         comments_data = [
-            self._build_comment_response(comment, self._user_repo.get_by_id(comment.author_id))["comment"]
+            self._build_comment_response(comment, self._user_repo.get_by_id(comment.author_id))[
+                "comment"
+            ]
             for comment in comments
         ]
         return {"comments": comments_data}

@@ -4,7 +4,6 @@ from app.models.tag_model import ArticleTag, Tag
 
 
 class TagRepository:
-
     def __init__(self, session: Session):
         self._session = session
 

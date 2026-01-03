@@ -32,10 +32,10 @@ def verify_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except jwt.ExpiredSignatureError:
-        raise ValueError("Token has expired")
-    except jwt.InvalidTokenError:
-        raise ValueError("Invalid token")
+    except jwt.ExpiredSignatureError as e:
+        raise ValueError("Token has expired") from e
+    except jwt.InvalidTokenError as e:
+        raise ValueError("Invalid token") from e
 
 
 def hash_password(password: str) -> str:
@@ -50,4 +50,3 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return True
     except VerifyMismatchError:
         return False
-

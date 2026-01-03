@@ -38,6 +38,7 @@ select = [
 ]
 ignore = [
     "E501",  # line too long
+    "B008",  # FastAPI의 Depends(...)는 함수 시그니처 기본값에 두는 것이 일반적임
 ]
 
 [tool.pytest.ini_options]

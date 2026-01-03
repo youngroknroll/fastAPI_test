@@ -4,7 +4,6 @@ from app.models.follow_model import Follow
 
 
 class FollowRepository:
-
     def __init__(self, session: Session):
         self._session = session
 

@@ -4,6 +4,10 @@ from sqlmodel import Session
 from app.core.database import get_session
 from app.core.security import verify_token
 from app.models.user_model import User
+from app.repositories.article_repository import ArticleRepository
+from app.repositories.comment_repository import CommentRepository
+from app.repositories.favorite_repository import FavoriteRepository
+from app.repositories.follow_repository import FollowRepository
 from app.repositories.interfaces import (
     ArticleRepositoryInterface,
     CommentRepositoryInterface,
@@ -12,10 +16,6 @@ from app.repositories.interfaces import (
     TagRepositoryInterface,
     UserRepositoryInterface,
 )
-from app.repositories.article_repository import ArticleRepository
-from app.repositories.comment_repository import CommentRepository
-from app.repositories.favorite_repository import FavoriteRepository
-from app.repositories.follow_repository import FollowRepository
 from app.repositories.tag_repository import TagRepository
 from app.repositories.user_repository import UserRepository
 from app.services.article_service import ArticleService
@@ -50,7 +50,9 @@ def get_follow_repository(session: Session = Depends(get_session)) -> FollowRepo
 
 
 # Service
-def get_user_service(user_repo: UserRepositoryInterface = Depends(get_user_repository)) -> UserService:
+def get_user_service(
+    user_repo: UserRepositoryInterface = Depends(get_user_repository),
+) -> UserService:
     return UserService(user_repo)
 
 
@@ -95,7 +97,7 @@ def get_current_user(
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token payload")
     except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+        raise HTTPException(status_code=401, detail=str(e)) from e
 
     user = user_repo.get_by_id(user_id)
     if user is None:

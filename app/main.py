@@ -30,4 +30,3 @@ app.include_router(tag.router)
 def health_check():
     """Health check endpoint"""
     return {"status": "ok"}
-

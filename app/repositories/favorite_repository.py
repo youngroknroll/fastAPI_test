@@ -4,7 +4,6 @@ from app.models.favorite_model import Favorite
 
 
 class FavoriteRepository:
-
     def __init__(self, session: Session):
         self._session = session
 

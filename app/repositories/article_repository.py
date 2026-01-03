@@ -4,7 +4,6 @@ from app.models.article_model import Article
 
 
 class ArticleRepository:
-
     def __init__(self, session: Session):
         self._session = session
 

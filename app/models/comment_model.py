@@ -4,7 +4,6 @@ from sqlmodel import Field, SQLModel
 
 
 class Comment(SQLModel, table=True):
-
     __tablename__ = "comments"
 
     id: int | None = Field(default=None, primary_key=True)
@@ -13,4 +12,3 @@ class Comment(SQLModel, table=True):
     article_id: int = Field(foreign_key="articles.id")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-

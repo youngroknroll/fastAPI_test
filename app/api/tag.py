@@ -15,4 +15,3 @@ def get_tags(session: Session = Depends(get_session)):
     repo = TagRepository(session)
     tags = repo.get_all_tags()
     return {"tags": tags}
-

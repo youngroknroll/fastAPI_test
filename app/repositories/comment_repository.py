@@ -4,7 +4,6 @@ from app.models.comment_model import Comment
 
 
 class CommentRepository:
-
     def __init__(self, session: Session):
         self._session = session
 

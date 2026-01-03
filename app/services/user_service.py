@@ -7,7 +7,6 @@ from app.schemas.user_schema import UserRegister, UserUpdate
 
 
 class UserService:
-
     def __init__(self, user_repo: UserRepositoryInterface):
         self._repo = user_repo
 

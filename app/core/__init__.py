@@ -1,2 +1,0 @@
-"""Core - Configuration & Dependencies"""
-

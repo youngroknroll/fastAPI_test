@@ -21,7 +21,6 @@ def _slugify(title: str) -> str:
 
 
 class ArticleService:
-
     def __init__(
         self,
         article_repo: ArticleRepositoryInterface,
@@ -73,7 +72,7 @@ class ArticleService:
             return {"articles": [], "articlesCount": 0}
 
         articles = self._article_repo.get_all(author_id=author_id, article_ids=article_ids)
-        # article -> author_ids_set 
+        # article -> author_ids_set
         articles_data = [
             self._build_article_response(
                 article,
@@ -96,7 +95,9 @@ class ArticleService:
         article = self._get_article_or_404(slug)
         self._check_author_permission(article, user)
 
-        article = self._article_repo.update(article, title=title, description=description, body=body)
+        article = self._article_repo.update(
+            article, title=title, description=description, body=body
+        )
         author = self._user_repo.get_by_id(article.author_id)
         tag_list = self._tag_repo.get_tags_for_article(article.id)
         return self._build_article_response(article, author, tag_list)
@@ -157,9 +158,12 @@ class ArticleService:
             favorited_ids = self._favorite_repo.get_article_ids_by_user(user.id)
             if not favorited_ids:
                 return []
-            article_ids = list(set(article_ids) & set(favorited_ids)) if article_ids else favorited_ids
+            article_ids = (
+                list(set(article_ids) & set(favorited_ids)) if article_ids else favorited_ids
+            )
 
         return article_ids
+
     def _build_article_response(
         self,
         article: Article,
@@ -191,4 +195,3 @@ class ArticleService:
                 },
             }
         }
-
