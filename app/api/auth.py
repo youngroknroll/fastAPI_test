@@ -1,26 +1,11 @@
-"""Auth API - 인증 관련 엔드포인트"""
-
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 
 from app.core.dependencies import get_current_user, get_user_service
 from app.models.user_model import User
-from app.schemas.user_schema import UserLogin, UserRegister, UserUpdate
+from app.dtos.request import UserRegisterRequest, UserLoginRequest, UserUpdateRequest
 from app.services.user_service import UserService
 
 router = APIRouter(tags=["auth"])
-
-
-class UserRegisterRequest(BaseModel):
-    user: UserRegister
-
-
-class UserLoginRequest(BaseModel):
-    user: UserLogin
-
-
-class UserUpdateRequest(BaseModel):
-    user: UserUpdate
 
 
 @router.post("/users", status_code=201)

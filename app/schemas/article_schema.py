@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class ArticleCreate(BaseModel):
+
     title: str
     description: str
     body: str
@@ -9,6 +10,8 @@ class ArticleCreate(BaseModel):
 
 
 class ArticleUpdate(BaseModel):
+
     title: str | None = None
     description: str | None = None
     body: str | None = None
+

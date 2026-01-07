@@ -1,21 +1,13 @@
 """Comment API - 댓글 관련 엔드포인트"""
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 
 from app.core.dependencies import get_comment_service, get_current_user
 from app.models.user_model import User
+from app.dtos.request import CommentCreateRequest
 from app.services.comment_service import CommentService
 
 router = APIRouter(tags=["comments"])
-
-
-class CommentCreate(BaseModel):
-    body: str
-
-
-class CommentCreateRequest(BaseModel):
-    comment: CommentCreate
 
 
 @router.post("/articles/{slug}/comments", status_code=200)
@@ -25,7 +17,8 @@ def create_comment(
     current_user: User = Depends(get_current_user),
     service: CommentService = Depends(get_comment_service),
 ):
-    return service.create_comment(slug=slug, body=request.comment.body, user=current_user)
+    comment_dto = service.create_comment(slug=slug, body=request.comment.body, user=current_user)
+    return {"comment": comment_dto}
 
 
 @router.get("/articles/{slug}/comments", status_code=200)

@@ -85,7 +85,6 @@ def get_current_user(
     authorization: str | None = Header(None),
     user_repo: UserRepositoryInterface = Depends(get_user_repository),
 ) -> User:
-    """JWT 토큰에서 현재 로그인한 유저 조회"""
     if authorization is None:
         raise HTTPException(status_code=401, detail="Authorization header missing")
 
@@ -110,7 +109,6 @@ def get_current_user_optional(
     authorization: str | None = Header(None),
     user_repo: UserRepositoryInterface = Depends(get_user_repository),
 ) -> User | None:
-    """JWT 토큰에서 현재 유저 조회 (선택적 - 비로그인 허용 엔드포인트용)"""
     if authorization is None:
         return None
 

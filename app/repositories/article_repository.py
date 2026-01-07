@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlmodel import Session, select
 
 from app.models.article_model import Article
@@ -21,7 +23,9 @@ class ArticleRepository:
             statement = statement.where(Article.id.in_(article_ids))
         return list(self._session.exec(statement).all())
 
-    def create(self, slug: str, title: str, description: str, body: str, author_id: int) -> Article:
+    def create(
+        self, slug: str, title: str, description: str, body: str, author_id: int
+    ) -> Article:
         article = Article(
             slug=slug, title=title, description=description, body=body, author_id=author_id
         )
@@ -30,7 +34,7 @@ class ArticleRepository:
         self._session.refresh(article)
         return article
 
-    def update(self, article: Article, **kwargs) -> Article:
+    def update(self, article: Article, **kwargs: Any) -> Article:
         for key, value in kwargs.items():
             if value is not None:
                 setattr(article, key, value)

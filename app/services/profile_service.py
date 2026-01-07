@@ -14,13 +14,15 @@ class ProfileService:
         self._follow_repo = follow_repo
 
     def get_profile(self, username: str, current_user_id: int | None = None) -> dict:
-        """프로필 조회"""
         user = self._get_user_or_404(username)
-        following = self._check_following(current_user_id, user.id)
+        following = (
+            self._follow_repo.is_following(current_user_id, user.id)
+            if current_user_id
+            else False
+        )
         return self._build_profile_response(user, following)
 
     def follow_user(self, current_user: User, username: str) -> dict:
-        """유저 팔로우"""
         followee = self._get_user_or_404(username)
 
         if current_user.id == followee.id:
@@ -32,7 +34,6 @@ class ProfileService:
         return self._build_profile_response(followee, following=True)
 
     def unfollow_user(self, current_user: User, username: str) -> dict:
-        """유저 언팔로우"""
         followee = self._get_user_or_404(username)
         self._follow_repo.delete(current_user.id, followee.id)
         return self._build_profile_response(followee, following=False)
@@ -42,12 +43,6 @@ class ProfileService:
         if user is None:
             raise HTTPException(status_code=404, detail="Profile not found")
         return user
-
-    def _check_following(self, current_user_id: int | None, target_user_id: int) -> bool:
-        if current_user_id is None:
-            return False
-        return self._follow_repo.is_following(current_user_id, target_user_id)
-
     def _build_profile_response(self, user: User, following: bool) -> dict:
         return {
             "profile": {
@@ -57,3 +52,4 @@ class ProfileService:
                 "following": following,
             }
         }
+

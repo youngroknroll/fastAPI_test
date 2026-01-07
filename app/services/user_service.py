@@ -11,7 +11,6 @@ class UserService:
         self._repo = user_repo
 
     def register_user(self, user_data: UserRegister) -> dict:
-        """회원가입"""
         if self._repo.get_by_email(user_data.email):
             raise HTTPException(status_code=422, detail="Email already registered")
 
@@ -26,7 +25,6 @@ class UserService:
         return self._build_user_response(user)
 
     def login_user(self, email: str, password: str) -> dict:
-        """로그인"""
         user = self._repo.get_by_email(email)
         if user is None:
             raise HTTPException(status_code=422, detail="Email not found")
@@ -38,11 +36,9 @@ class UserService:
         return self._build_user_response(user)
 
     def get_user_profile(self, user: User) -> dict:
-        """내 정보 조회"""
         return self._build_user_response(user)
 
     def update_user(self, user: User, update_data: UserUpdate) -> dict:
-        """내 정보 수정"""
         if update_data.email is not None:
             user.email = update_data.email
         if update_data.username is not None:
@@ -59,11 +55,8 @@ class UserService:
         return self._build_user_response(user)
 
     def get_by_id(self, user_id: int) -> User | None:
-        """ID로 유저 조회"""
         return self._repo.get_by_id(user_id)
-
     def _build_user_response(self, user: User) -> dict:
-        """유저 응답 형식 생성"""
         token = create_access_token(user_id=user.id, username=user.username)
         return {
             "user": {
@@ -72,3 +65,4 @@ class UserService:
                 "token": token,
             }
         }
+

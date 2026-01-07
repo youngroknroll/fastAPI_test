@@ -1,5 +1,3 @@
-"""FastAPI Application Entry Point"""
-
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,7 +8,6 @@ from app.core.database import create_db_and_tables
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan context manager for startup/shutdown events"""
     # Startup
     create_db_and_tables()
     yield
@@ -28,5 +25,4 @@ app.include_router(tag.router)
 
 @app.get("/")
 def health_check():
-    """Health check endpoint"""
     return {"status": "ok"}

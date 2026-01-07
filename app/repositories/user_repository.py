@@ -4,8 +4,6 @@ from app.models.user_model import User
 
 
 class UserRepository:
-    """유저 데이터 저장소"""
-
     def __init__(self, session: Session):
         self._session = session
 

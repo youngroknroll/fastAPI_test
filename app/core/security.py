@@ -1,5 +1,3 @@
-"""Security utilities for authentication"""
-
 from datetime import datetime, timedelta
 
 import jwt
@@ -16,8 +14,7 @@ ph = PasswordHasher()
 
 
 def create_access_token(user_id: int, username: str) -> str:
-    """Create JWT access token"""
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {
         "user_id": user_id,
         "username": username,
@@ -28,25 +25,23 @@ def create_access_token(user_id: int, username: str) -> str:
 
 
 def verify_token(token: str) -> dict:
-    """Verify JWT token and return payload"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except jwt.ExpiredSignatureError as e:
-        raise ValueError("Token has expired") from e
-    except jwt.InvalidTokenError as e:
-        raise ValueError("Invalid token") from e
+    except jwt.ExpiredSignatureError:
+        raise ValueError("Token has expired")
+    except jwt.InvalidTokenError:
+        raise ValueError("Invalid token")
 
 
 def hash_password(password: str) -> str:
-    """비밀번호를 Argon2로 해싱"""
     return ph.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """비밀번호 검증"""
     try:
         ph.verify(hashed_password, plain_password)
         return True
     except VerifyMismatchError:
         return False
+
