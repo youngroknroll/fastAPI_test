@@ -107,3 +107,27 @@ class CommentResponse(BaseModel):
     createdAt: str  # ISO format with Z
     updatedAt: str  # ISO format with Z
     author: AuthorResponse
+
+# ============================================================================
+# Wrapper Response DTOs (API 응답)
+# ============================================================================
+
+class UserResponseWrapper(BaseModel):
+    """Auth API 응답: /auth/register, /auth/login, /auth/current"""
+    user: UserResponse
+
+
+class ProfileResponseWrapper(BaseModel):
+    """Profile API 응답: /profiles/{username}"""
+    profile: ProfileResponse
+
+
+class CommentResponseWrapper(BaseModel):
+    """Comment API 응답: GET /articles/{slug}/comments"""
+    comments: list[CommentResponse]
+
+
+class ArticleResponseWrapper(BaseModel):
+    """Article API 응답: GET /articles"""
+    articles: list[ArticleResponse]
+    articlesCount: int

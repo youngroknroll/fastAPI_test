@@ -3,33 +3,38 @@ from fastapi import APIRouter, Depends
 from app.core.dependencies import get_current_user, get_user_service
 from app.models.user_model import User
 from app.dtos.request import UserRegisterRequest, UserLoginRequest, UserUpdateRequest
+from app.dtos.response import UserResponseWrapper
 from app.services.user_service import UserService
 
 router = APIRouter(tags=["auth"])
 
 
-@router.post("/users", status_code=201)
+@router.post("/users", status_code=201, response_model=UserResponseWrapper)
 def register(request: UserRegisterRequest, service: UserService = Depends(get_user_service)):
-    return service.register_user(request.user)
+    user_response = service.register_user(request.user)
+    return {"user": user_response}
 
 
-@router.post("/users/login", status_code=200)
+@router.post("/users/login", status_code=200, response_model=UserResponseWrapper)
 def login(request: UserLoginRequest, service: UserService = Depends(get_user_service)):
-    return service.login_user(request.user.email, request.user.password)
+    user_response = service.login_user(request.user.email, request.user.password)
+    return {"user": user_response}
 
 
-@router.get("/user", status_code=200)
+@router.get("/user", status_code=200, response_model=UserResponseWrapper)
 def get_current_user_info(
     current_user: User = Depends(get_current_user),
     service: UserService = Depends(get_user_service),
 ):
-    return service.get_user_profile(current_user)
+    user_response = service.get_user_profile(current_user)
+    return {"user": user_response}
 
 
-@router.put("/user", status_code=200)
+@router.put("/user", status_code=200, response_model=UserResponseWrapper)
 def update_user(
     request: UserUpdateRequest,
     current_user: User = Depends(get_current_user),
     service: UserService = Depends(get_user_service),
 ):
-    return service.update_user(current_user, request.user)
+    user_response = service.update_user(current_user, request.user)
+    return {"user": user_response}

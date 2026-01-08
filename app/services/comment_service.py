@@ -27,7 +27,7 @@ class CommentService:
         comment = self._comment_repo.create(body=body, author_id=user.id, article_id=article.id)
         return self._build_comment_response(comment, user)
 
-    def get_comments(self, slug: str) -> dict:
+    def get_comments(self, slug: str) -> list[CommentResponse]:
         article = get_article_or_404(self._article_repo, slug)
         comments = self._comment_repo.get_by_article_id(article.id)
 
@@ -35,7 +35,7 @@ class CommentService:
             self._build_comment_response(comment, self._user_repo.get_by_id(comment.author_id))
             for comment in comments
         ]
-        return {"comments": comments_data}
+        return comments_data
 
     def delete_comment(self, slug: str, comment_id: int, user: User) -> None:
         get_article_or_404(self._article_repo, slug)

@@ -5,12 +5,13 @@ from fastapi import APIRouter, Depends
 from app.core.dependencies import get_comment_service, get_current_user
 from app.models.user_model import User
 from app.dtos.request import CommentCreateRequest
+from app.dtos.response import CommentResponse, CommentResponseWrapper
 from app.services.comment_service import CommentService
 
 router = APIRouter(tags=["comments"])
 
 
-@router.post("/articles/{slug}/comments", status_code=200)
+@router.post("/articles/{slug}/comments", status_code=200, response_model=dict)
 def create_comment(
     slug: str,
     request: CommentCreateRequest,
@@ -21,9 +22,10 @@ def create_comment(
     return {"comment": comment_dto}
 
 
-@router.get("/articles/{slug}/comments", status_code=200)
+@router.get("/articles/{slug}/comments", status_code=200, response_model=CommentResponseWrapper)
 def get_comments(slug: str, service: CommentService = Depends(get_comment_service)):
-    return service.get_comments(slug=slug)
+    comments = service.get_comments(slug=slug)
+    return {"comments": comments}
 
 
 @router.delete("/articles/{slug}/comments/{comment_id}", status_code=204)

@@ -3,12 +3,13 @@ from fastapi import APIRouter, Depends
 from app.core.dependencies import get_article_service, get_current_user
 from app.models.user_model import User
 from app.dtos.request import ArticleCreateRequest, ArticleUpdateRequest
+from app.dtos.response import ArticleResponseWrapper
 from app.services.article_service import ArticleService
 
 router = APIRouter(tags=["articles"])
 
 
-@router.get("/articles", status_code=200)
+@router.get("/articles", status_code=200, response_model=ArticleResponseWrapper)
 def get_articles(
     author: str = None,
     tag: str = None,

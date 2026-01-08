@@ -4,13 +4,14 @@ from app.core.security import create_access_token, hash_password, verify_passwor
 from app.models.user_model import User
 from app.repositories.interfaces import UserRepositoryInterface
 from app.schemas.user_schema import UserRegister, UserUpdate
+from app.dtos.response import UserResponse
 
 
 class UserService:
     def __init__(self, user_repo: UserRepositoryInterface):
         self._repo = user_repo
 
-    def register_user(self, user_data: UserRegister) -> dict:
+    def register_user(self, user_data: UserRegister) -> UserResponse:
         if self._repo.get_by_email(user_data.email):
             raise HTTPException(status_code=422, detail="Email already registered")
 
@@ -24,7 +25,7 @@ class UserService:
         )
         return self._build_user_response(user)
 
-    def login_user(self, email: str, password: str) -> dict:
+    def login_user(self, email: str, password: str) -> UserResponse:
         user = self._repo.get_by_email(email)
         if user is None:
             raise HTTPException(status_code=422, detail="Email not found")
@@ -35,10 +36,10 @@ class UserService:
 
         return self._build_user_response(user)
 
-    def get_user_profile(self, user: User) -> dict:
+    def get_user_profile(self, user: User) -> UserResponse:
         return self._build_user_response(user)
 
-    def update_user(self, user: User, update_data: UserUpdate) -> dict:
+    def update_user(self, user: User, update_data: UserUpdate) -> UserResponse:
         if update_data.email is not None:
             user.email = update_data.email
         if update_data.username is not None:
@@ -56,13 +57,13 @@ class UserService:
 
     def get_by_id(self, user_id: int) -> User | None:
         return self._repo.get_by_id(user_id)
-    def _build_user_response(self, user: User) -> dict:
+    def _build_user_response(self, user: User) -> UserResponse:
         token = create_access_token(user_id=user.id, username=user.username)
-        return {
-            "user": {
-                "email": user.email,
-                "username": user.username,
-                "token": token,
-            }
-        }
+        return UserResponse(
+            email=user.email,
+            username=user.username,
+            token=token,
+            bio=user.bio,
+            image=user.image,
+        )
 
