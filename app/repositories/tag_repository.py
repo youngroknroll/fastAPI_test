@@ -8,8 +8,8 @@ class TagRepository:
         self._session = session
 
     def add_tags_to_article(self, article_id: int, tag_names: list[str]) -> None:
-        for name in tag_names:
-            tag = self._get_or_create(name)
+        for tag_name in tag_names:
+            tag = self._get_or_create(tag_name)
             article_tag = ArticleTag(article_id=article_id, tag_id=tag.id)
             self._session.add(article_tag)
         self._session.commit()
@@ -34,11 +34,11 @@ class TagRepository:
         statement = select(Tag.name)
         return list(self._session.exec(statement).all())
 
-    def _get_or_create(self, name: str) -> Tag:
-        statement = select(Tag).where(Tag.name == name)
+    def _get_or_create(self, tag_name: str) -> Tag:
+        statement = select(Tag).where(Tag.name == tag_name)
         tag = self._session.exec(statement).first()
         if not tag:
-            tag = Tag(name=name)
+            tag = Tag(name=tag_name)
             self._session.add(tag)
             self._session.commit()
             self._session.refresh(tag)

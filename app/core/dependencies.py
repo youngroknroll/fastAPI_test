@@ -1,7 +1,13 @@
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, Header
 from sqlmodel import Session
 
 from app.core.database import get_session
+from app.core.exceptions import (
+    AuthorizationHeaderMissingException,
+    InvalidTokenException,
+    UnauthorizedException,
+    UserNotFoundException,
+)
 from app.core.security import verify_token
 from app.models.user_model import User
 from app.repositories.article_repository import ArticleRepository
@@ -21,6 +27,7 @@ from app.repositories.user_repository import UserRepository
 from app.services.article_service import ArticleService
 from app.services.comment_service import CommentService
 from app.services.profile_service import ProfileService
+from app.services.tag_service import TagService
 from app.services.user_service import UserService
 
 
@@ -80,13 +87,19 @@ def get_profile_service(
     return ProfileService(user_repo, follow_repo)
 
 
+def get_tag_service(
+    tag_repo: TagRepositoryInterface = Depends(get_tag_repository),
+) -> TagService:
+    return TagService(tag_repo)
+
+
 # Auth
 def get_current_user(
     authorization: str | None = Header(None),
     user_repo: UserRepositoryInterface = Depends(get_user_repository),
 ) -> User:
     if authorization is None:
-        raise HTTPException(status_code=401, detail="Authorization header missing")
+        raise AuthorizationHeaderMissingException()
 
     token = authorization.replace("Token ", "")
 
@@ -94,13 +107,13 @@ def get_current_user(
         payload = verify_token(token)
         user_id = payload.get("user_id")
         if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token payload")
+            raise InvalidTokenException("Invalid token payload")
     except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e)) from e
+        raise InvalidTokenException(str(e)) from e
 
     user = user_repo.get_by_id(user_id)
     if user is None:
-        raise HTTPException(status_code=401, detail="User not found")
+        raise UserNotFoundException()
 
     return user
 
@@ -114,5 +127,5 @@ def get_current_user_optional(
 
     try:
         return get_current_user(authorization, user_repo)
-    except HTTPException:
+    except UnauthorizedException:
         return None

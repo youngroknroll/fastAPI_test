@@ -1,5 +1,9 @@
-from fastapi import HTTPException
-
+from app.core.exceptions import (
+    EmailAlreadyRegisteredException,
+    EmailNotFoundException,
+    InvalidPasswordException,
+    UsernameAlreadyTakenException,
+)
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user_model import User
 from app.repositories.interfaces import UserRepositoryInterface
@@ -13,10 +17,10 @@ class UserService:
 
     def register_user(self, user_data: UserRegister) -> UserResponse:
         if self._repo.get_by_email(user_data.email):
-            raise HTTPException(status_code=422, detail="Email already registered")
+            raise EmailAlreadyRegisteredException()
 
         if self._repo.get_by_username(user_data.username):
-            raise HTTPException(status_code=422, detail="Username already taken")
+            raise UsernameAlreadyTakenException()
 
         # 비밀번호 해싱
         hashed_password = hash_password(user_data.password)
@@ -31,11 +35,11 @@ class UserService:
     def login_user(self, email: str, password: str) -> UserResponse:
         user = self._repo.get_by_email(email)
         if user is None:
-            raise HTTPException(status_code=422, detail="Email not found")
+            raise EmailNotFoundException()
 
         # 비밀번호 검증
         if not verify_password(password, user.hashed_password):
-            raise HTTPException(status_code=422, detail="Invalid password")
+            raise InvalidPasswordException()
 
         return self._build_user_response(user)
 
@@ -45,11 +49,11 @@ class UserService:
     def update_user(self, user: User, update_data: UserUpdate) -> UserResponse:
         if update_data.email is not None and update_data.email != user.email:
             if self._repo.get_by_email(update_data.email):
-                raise HTTPException(status_code=422, detail="Email already registered")
+                raise EmailAlreadyRegisteredException()
             user.email = update_data.email
         if update_data.username is not None and update_data.username != user.username:
             if self._repo.get_by_username(update_data.username):
-                raise HTTPException(status_code=422, detail="Username already taken")
+                raise UsernameAlreadyTakenException()
             user.username = update_data.username
         if update_data.password is not None:
             # 비밀번호 해싱

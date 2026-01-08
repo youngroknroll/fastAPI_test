@@ -1,7 +1,5 @@
 import re
 
-from fastapi import HTTPException
-
 from app.core.error_handlers import get_article_or_404, check_author_permission
 from app.models.article_model import Article
 from app.models.user_model import User
@@ -77,7 +75,8 @@ class ArticleService:
             author_id=author_id, article_ids=article_ids, current_user_id=current_user_id
         )
         articles_response = [
-            ArticleResponse.from_article_data(data) for data in articles_data
+            ArticleResponse.from_article_data(article_data)
+            for article_data in articles_data
         ]
         return {"articles": articles_response, "articlesCount": len(articles_response)}
 

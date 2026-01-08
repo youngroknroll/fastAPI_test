@@ -1,5 +1,4 @@
-from fastapi import HTTPException
-
+from app.core.exceptions import CannotFollowYourselfException, ProfileNotFoundException
 from app.models.user_model import User
 from app.repositories.interfaces import FollowRepositoryInterface, UserRepositoryInterface
 from app.dtos.response import ProfileResponse
@@ -27,7 +26,7 @@ class ProfileService:
         followee = self._get_user_or_404(username)
 
         if current_user.id == followee.id:
-            raise HTTPException(status_code=422, detail="Cannot follow yourself")
+            raise CannotFollowYourselfException()
 
         if not self._follow_repo.is_following(current_user.id, followee.id):
             self._follow_repo.create(current_user.id, followee.id)
@@ -42,6 +41,6 @@ class ProfileService:
     def _get_user_or_404(self, username: str) -> User:
         user = self._user_repo.get_by_username(username)
         if user is None:
-            raise HTTPException(status_code=404, detail="Profile not found")
+            raise ProfileNotFoundException()
         return user
 

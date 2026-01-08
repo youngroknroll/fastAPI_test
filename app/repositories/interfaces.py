@@ -1,8 +1,11 @@
-from typing import Any, Protocol
+from typing import Any, Protocol, TYPE_CHECKING
 
 from app.models.article_model import Article
 from app.models.comment_model import Comment
 from app.models.user_model import User
+
+if TYPE_CHECKING:
+    from app.repositories.article_repository import ArticleWithRelations
 
 
 class UserRepositoryInterface(Protocol):
@@ -19,9 +22,11 @@ class ArticleRepositoryInterface(Protocol):
         self, author_id: int | None = None, article_ids: list[int] | None = None
     ) -> list[Article]: ...
     def get_all_with_relations(
-        self, author_id: int | None = None, article_ids: list[int] | None = None,
-        current_user_id: int | None = None
-    ) -> list[dict]: ...
+        self,
+        author_id: int | None = None,
+        article_ids: list[int] | None = None,
+        current_user_id: int | None = None,
+    ) -> "list[ArticleWithRelations]": ...
     def create(
         self, slug: str, title: str, description: str, body: str, author_id: int
     ) -> Article: ...

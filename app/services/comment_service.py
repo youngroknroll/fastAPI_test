@@ -1,6 +1,5 @@
-from fastapi import HTTPException
-
 from app.core.error_handlers import get_article_or_404, check_comment_author_permission
+from app.core.exceptions import CommentNotFoundException
 from app.models.comment_model import Comment
 from app.models.user_model import User
 from app.repositories.interfaces import (
@@ -44,11 +43,11 @@ class CommentService:
 
         comment = self._comment_repo.get_by_id(comment_id)
         if comment is None:
-            raise HTTPException(status_code=404, detail="Comment not found")
+            raise CommentNotFoundException()
 
         # 댓글이 해당 글에 속하는지 검증
         if comment.article_id != article.id:
-            raise HTTPException(status_code=404, detail="Comment not found")
+            raise CommentNotFoundException()
 
         check_comment_author_permission(comment.author_id, user.id)
         self._comment_repo.delete(comment)
