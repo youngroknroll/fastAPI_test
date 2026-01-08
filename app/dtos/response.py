@@ -127,7 +127,17 @@ class CommentResponseWrapper(BaseModel):
     comments: list[CommentResponse]
 
 
+class SingleCommentResponseWrapper(BaseModel):
+    """Comment API 응답: POST /articles/{slug}/comments"""
+    comment: CommentResponse
+
+
 class ArticleResponseWrapper(BaseModel):
     """Article API 응답: GET /articles"""
     articles: list[ArticleResponse]
     articlesCount: int
+
+
+class SingleArticleResponseWrapper(BaseModel):
+    """Article API 응답: POST, GET, PUT /articles/{slug}"""
+    article: ArticleResponse

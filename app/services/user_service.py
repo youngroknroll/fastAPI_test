@@ -15,6 +15,9 @@ class UserService:
         if self._repo.get_by_email(user_data.email):
             raise HTTPException(status_code=422, detail="Email already registered")
 
+        if self._repo.get_by_username(user_data.username):
+            raise HTTPException(status_code=422, detail="Username already taken")
+
         # 비밀번호 해싱
         hashed_password = hash_password(user_data.password)
 
@@ -40,9 +43,13 @@ class UserService:
         return self._build_user_response(user)
 
     def update_user(self, user: User, update_data: UserUpdate) -> UserResponse:
-        if update_data.email is not None:
+        if update_data.email is not None and update_data.email != user.email:
+            if self._repo.get_by_email(update_data.email):
+                raise HTTPException(status_code=422, detail="Email already registered")
             user.email = update_data.email
-        if update_data.username is not None:
+        if update_data.username is not None and update_data.username != user.username:
+            if self._repo.get_by_username(update_data.username):
+                raise HTTPException(status_code=422, detail="Username already taken")
             user.username = update_data.username
         if update_data.password is not None:
             # 비밀번호 해싱
@@ -59,11 +66,5 @@ class UserService:
         return self._repo.get_by_id(user_id)
     def _build_user_response(self, user: User) -> UserResponse:
         token = create_access_token(user_id=user.id, username=user.username)
-        return UserResponse(
-            email=user.email,
-            username=user.username,
-            token=token,
-            bio=user.bio,
-            image=user.image,
-        )
+        return UserResponse.from_user(user, token)
 

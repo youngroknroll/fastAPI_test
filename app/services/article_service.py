@@ -55,16 +55,16 @@ class ArticleService:
         }
         return ArticleResponse.from_article_data(article_data)
 
-    def get_article_by_slug(self, slug: str) -> ArticleResponse:
+    def get_article_by_slug(self, slug: str, current_user_id: int | None = None) -> ArticleResponse:
         article = get_article_or_404(self._article_repo, slug)
         article_data_list = self._article_repo.get_all_with_relations(
-            article_ids=[article.id]
+            article_ids=[article.id], current_user_id=current_user_id
         )
         if not article_data_list:
             return None
         return ArticleResponse.from_article_data(article_data_list[0])
 
-    def get_articles(self, author: str = None, tag: str = None, favorited: str = None) -> dict:
+    def get_articles(self, author: str = None, tag: str = None, favorited: str = None, current_user_id: int | None = None) -> dict:
         author_id = self._get_author_id(author)
         if author and author_id is None:
             return {"articles": [], "articlesCount": 0}
@@ -74,7 +74,7 @@ class ArticleService:
             return {"articles": [], "articlesCount": 0}
 
         articles_data = self._article_repo.get_all_with_relations(
-            author_id=author_id, article_ids=article_ids
+            author_id=author_id, article_ids=article_ids, current_user_id=current_user_id
         )
         articles_response = [
             ArticleResponse.from_article_data(data) for data in articles_data
@@ -102,7 +102,10 @@ class ArticleService:
 
     def favorite_article(self, slug: str, user: User) -> ArticleResponse:
         article = get_article_or_404(self._article_repo, slug)
-        self._favorite_repo.create(user_id=user.id, article_id=article.id)
+
+        # 이미 즐겨찾기한 경우 중복 등록 방지
+        if not self._favorite_repo.is_favorited(user_id=user.id, article_id=article.id):
+            self._favorite_repo.create(user_id=user.id, article_id=article.id)
 
         article_data_list = self._article_repo.get_all_with_relations(
             article_ids=[article.id], current_user_id=user.id

@@ -31,17 +31,23 @@ class CommentService:
         article = get_article_or_404(self._article_repo, slug)
         comments = self._comment_repo.get_by_article_id(article.id)
 
-        comments_data = [
-            self._build_comment_response(comment, self._user_repo.get_by_id(comment.author_id))
-            for comment in comments
-        ]
+        comments_data = []
+        for comment in comments:
+            author = self._user_repo.get_by_id(comment.author_id)
+            if author is None:
+                continue  # author가 삭제된 댓글은 건너뜀
+            comments_data.append(self._build_comment_response(comment, author))
         return comments_data
 
     def delete_comment(self, slug: str, comment_id: int, user: User) -> None:
-        get_article_or_404(self._article_repo, slug)
+        article = get_article_or_404(self._article_repo, slug)
 
         comment = self._comment_repo.get_by_id(comment_id)
         if comment is None:
+            raise HTTPException(status_code=404, detail="Comment not found")
+
+        # 댓글이 해당 글에 속하는지 검증
+        if comment.article_id != article.id:
             raise HTTPException(status_code=404, detail="Comment not found")
 
         check_comment_author_permission(comment.author_id, user.id)

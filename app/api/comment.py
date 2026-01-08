@@ -5,13 +5,13 @@ from fastapi import APIRouter, Depends
 from app.core.dependencies import get_comment_service, get_current_user
 from app.models.user_model import User
 from app.dtos.request import CommentCreateRequest
-from app.dtos.response import CommentResponse, CommentResponseWrapper
+from app.dtos.response import CommentResponseWrapper, SingleCommentResponseWrapper
 from app.services.comment_service import CommentService
 
 router = APIRouter(tags=["comments"])
 
 
-@router.post("/articles/{slug}/comments", status_code=200, response_model=dict)
+@router.post("/articles/{slug}/comments", status_code=200, response_model=SingleCommentResponseWrapper)
 def create_comment(
     slug: str,
     request: CommentCreateRequest,

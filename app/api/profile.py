@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.core.dependencies import get_current_user, get_profile_service
+from app.core.dependencies import get_current_user, get_current_user_optional, get_profile_service
 from app.models.user_model import User
 from app.dtos.response import ProfileResponseWrapper
 from app.services.profile_service import ProfileService
@@ -11,8 +11,13 @@ router = APIRouter(tags=["profiles"])
 
 
 @router.get("/profiles/{username}", status_code=200, response_model=ProfileResponseWrapper)
-def get_profile(username: str, service: ProfileService = Depends(get_profile_service)):
-    profile = service.get_profile(username)
+def get_profile(
+    username: str,
+    current_user: User | None = Depends(get_current_user_optional),
+    service: ProfileService = Depends(get_profile_service),
+):
+    current_user_id = current_user.id if current_user else None
+    profile = service.get_profile(username, current_user_id=current_user_id)
     return {"profile": profile}
 
 

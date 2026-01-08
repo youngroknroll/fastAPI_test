@@ -21,7 +21,7 @@ class ProfileService:
             if current_user_id
             else False
         )
-        return self._build_profile_response(user, following)
+        return ProfileResponse.from_user(user, following)
 
     def follow_user(self, current_user: User, username: str) -> ProfileResponse:
         followee = self._get_user_or_404(username)
@@ -32,23 +32,16 @@ class ProfileService:
         if not self._follow_repo.is_following(current_user.id, followee.id):
             self._follow_repo.create(current_user.id, followee.id)
 
-        return self._build_profile_response(followee, following=True)
+        return ProfileResponse.from_user(followee, following=True)
 
     def unfollow_user(self, current_user: User, username: str) -> ProfileResponse:
         followee = self._get_user_or_404(username)
         self._follow_repo.delete(current_user.id, followee.id)
-        return self._build_profile_response(followee, following=False)
+        return ProfileResponse.from_user(followee, following=False)
 
     def _get_user_or_404(self, username: str) -> User:
         user = self._user_repo.get_by_username(username)
         if user is None:
             raise HTTPException(status_code=404, detail="Profile not found")
         return user
-    def _build_profile_response(self, user: User, following: bool) -> ProfileResponse:
-        return ProfileResponse(
-            username=user.username,
-            bio=user.bio,
-            image=user.image,
-            following=following,
-        )
 
