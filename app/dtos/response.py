@@ -1,7 +1,11 @@
-from datetime import datetime
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel
 
 from app.models.user_model import User
+
+if TYPE_CHECKING:
+    from app.repositories.article_repository import ArticleWithRelations
 
 
 # ============================================================================
@@ -75,13 +79,13 @@ class ArticleResponse(BaseModel):
     author: AuthorResponse
 
     @classmethod
-    def from_article_data(cls, article_data: dict) -> "ArticleResponse":
+    def from_article_data(cls, article_data: "ArticleWithRelations") -> "ArticleResponse":
         """리포지토리에서 받은 관계 데이터로 응답 생성"""
-        article = article_data['article']
-        author = article_data['author']
-        tag_list = article_data.get('tag_list', [])
-        favorites_count = article_data.get('favorites_count', 0)
-        favorited = article_data.get('favorited', False)
+        article = article_data["article"]
+        author = article_data["author"]
+        tag_list = article_data.get("tag_list", [])
+        favorites_count = article_data.get("favorites_count", 0)
+        favorited = article_data.get("favorited", False)
         
         return cls(
             slug=article.slug,
