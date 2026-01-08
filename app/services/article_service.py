@@ -46,13 +46,23 @@ class ArticleService:
         if tag_list:
             self._tag_repo.add_tags_to_article(article.id, tag_list)
 
-        return self._build_article_response(article, author, tag_list or [])
+        article_data = {
+            'article': article,
+            'author': author,
+            'tag_list': tag_list or [],
+            'favorites_count': 0,
+            'favorited': False,
+        }
+        return ArticleResponse.from_article_data(article_data)
 
     def get_article_by_slug(self, slug: str) -> ArticleResponse:
         article = get_article_or_404(self._article_repo, slug)
-        author = self._user_repo.get_by_id(article.author_id)
-        tag_list = self._tag_repo.get_tags_for_article(article.id)
-        return self._build_article_response(article, author, tag_list)
+        article_data_list = self._article_repo.get_all_with_relations(
+            article_ids=[article.id]
+        )
+        if not article_data_list:
+            return None
+        return ArticleResponse.from_article_data(article_data_list[0])
 
     def get_articles(self, author: str = None, tag: str = None, favorited: str = None) -> dict:
         author_id = self._get_author_id(author)
@@ -63,16 +73,13 @@ class ArticleService:
         if article_ids is not None and not article_ids:
             return {"articles": [], "articlesCount": 0}
 
-        articles = self._article_repo.get_all(author_id=author_id, article_ids=article_ids)
-        articles_data = [
-            self._build_article_response(
-                article,
-                self._user_repo.get_by_id(article.author_id),
-                self._tag_repo.get_tags_for_article(article.id),
-            )
-            for article in articles
+        articles_data = self._article_repo.get_all_with_relations(
+            author_id=author_id, article_ids=article_ids
+        )
+        articles_response = [
+            ArticleResponse.from_article_data(data) for data in articles_data
         ]
-        return {"articles": articles_data, "articlesCount": len(articles_data)}
+        return {"articles": articles_response, "articlesCount": len(articles_response)}
 
     def update_article(
         self, slug: str, user: User, title: str = None, description: str = None, body: str = None
@@ -81,9 +88,12 @@ class ArticleService:
         check_author_permission(article, user)
 
         article = self._article_repo.update(article, title=title, description=description, body=body)
-        author = self._user_repo.get_by_id(article.author_id)
-        tag_list = self._tag_repo.get_tags_for_article(article.id)
-        return self._build_article_response(article, author, tag_list)
+        article_data_list = self._article_repo.get_all_with_relations(
+            article_ids=[article.id]
+        )
+        if not article_data_list:
+            return None
+        return ArticleResponse.from_article_data(article_data_list[0])
 
     def delete_article(self, slug: str, user: User) -> None:
         article = get_article_or_404(self._article_repo, slug)
@@ -94,17 +104,23 @@ class ArticleService:
         article = get_article_or_404(self._article_repo, slug)
         self._favorite_repo.create(user_id=user.id, article_id=article.id)
 
-        author = self._user_repo.get_by_id(article.author_id)
-        tag_list = self._tag_repo.get_tags_for_article(article.id)
-        return self._build_article_response(article, author, tag_list, current_user=user)
+        article_data_list = self._article_repo.get_all_with_relations(
+            article_ids=[article.id], current_user_id=user.id
+        )
+        if not article_data_list:
+            return None
+        return ArticleResponse.from_article_data(article_data_list[0])
 
     def unfavorite_article(self, slug: str, user: User) -> ArticleResponse:
         article = get_article_or_404(self._article_repo, slug)
         self._favorite_repo.delete(user_id=user.id, article_id=article.id)
 
-        author = self._user_repo.get_by_id(article.author_id)
-        tag_list = self._tag_repo.get_tags_for_article(article.id)
-        return self._build_article_response(article, author, tag_list, current_user=user)
+        article_data_list = self._article_repo.get_all_with_relations(
+            article_ids=[article.id], current_user_id=user.id
+        )
+        if not article_data_list:
+            return None
+        return ArticleResponse.from_article_data(article_data_list[0])
 
     # Private methods
     def _get_author_id(self, username: str) -> int | None:
@@ -131,26 +147,3 @@ class ArticleService:
             article_ids = list(set(article_ids) & set(favorited_ids)) if article_ids else favorited_ids
 
         return article_ids
-    
-    
-    def _build_article_response(
-        self, article: Article, author: User, tag_list: list[str] = None, current_user: User | None = None 
-    ) -> ArticleResponse:
-        favorites_count = self._favorite_repo.count_by_article(article.id)
-        favorited = (
-            self._favorite_repo.is_favorited(current_user.id, article.id) if current_user else False
-        )
-
-        return ArticleResponse(
-            slug=article.slug,
-            title=article.title,
-            description=article.description,
-            body=article.body,
-            tagList=tag_list or [],
-            createdAt=article.created_at.isoformat() + "Z",
-            updatedAt=article.updated_at.isoformat() + "Z",
-            favoritesCount=favorites_count,
-            favorited=favorited,
-            author=AuthorResponse.from_user(author),
-        )
-

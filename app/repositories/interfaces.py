@@ -18,6 +18,10 @@ class ArticleRepositoryInterface(Protocol):
     def get_all(
         self, author_id: int | None = None, article_ids: list[int] | None = None
     ) -> list[Article]: ...
+    def get_all_with_relations(
+        self, author_id: int | None = None, article_ids: list[int] | None = None,
+        current_user_id: int | None = None
+    ) -> list[dict]: ...
     def create(
         self, slug: str, title: str, description: str, body: str, author_id: int
     ) -> Article: ...

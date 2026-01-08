@@ -74,6 +74,28 @@ class ArticleResponse(BaseModel):
     favorited: bool
     author: AuthorResponse
 
+    @classmethod
+    def from_article_data(cls, article_data: dict) -> "ArticleResponse":
+        """리포지토리에서 받은 관계 데이터로 응답 생성"""
+        article = article_data['article']
+        author = article_data['author']
+        tag_list = article_data.get('tag_list', [])
+        favorites_count = article_data.get('favorites_count', 0)
+        favorited = article_data.get('favorited', False)
+        
+        return cls(
+            slug=article.slug,
+            title=article.title,
+            description=article.description,
+            body=article.body,
+            tagList=tag_list,
+            createdAt=article.created_at.isoformat() + "Z",
+            updatedAt=article.updated_at.isoformat() + "Z",
+            favoritesCount=favorites_count,
+            favorited=favorited,
+            author=AuthorResponse.from_user(author),
+        )
+
 
 # ============================================================================
 # Comment Response DTO
